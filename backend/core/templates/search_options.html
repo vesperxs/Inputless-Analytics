@@ -1,0 +1,505 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% block title %} Search Options {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<style>
+	.col-md-8 {
+		-ms-flex: 0 0 auto;
+		flex: 0 0 auto;
+		width: 100%;
+	}
+
+	.justify-content-center {
+		-ms-flex-pack: center !important;
+		justify-content: center !important;
+		padding-top: 2%;
+	}
+</style>
+<link href="{% static 'assets/css/ellie.css' %}" rel="stylesheet" />
+<link href="{% static 'assets/css/navbar.css' %}" rel="stylesheet" />
+<link href="{% static 'assets/css/scrollbar.css' %}" rel="stylesheet" />
+
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="container-fluid">
+	<div class="row">
+	  <div class="col-sm-auto bg-dark sticky-top">
+	  <div class="d-flex flex-sm-column flex-row flex-nowrap bg-dark align-items-center sticky-top">
+	    <ul
+	      class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center justify-content-between w-100 px-2 align-items-center">
+	      <li class="nav-item">
+		<a href="{% url 'home' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+		   data-bs-placement="right" data-bs-original-title="Home">
+		  <i class="bi bi-back fs-1"></i>
+		</a>
+	      </li>
+	    </ul>
+	  </div>
+	  </div>
+	  <div class="col-sm p-3 min-vh-100">
+	    <!-- content here -->
+
+	    <div class="row justify-content-center">
+	      <div class="col-md-8">
+		<div class="card card-profile">
+		  <div class="card-body">
+
+		    <h4> PERSONE - DOCUMENTI - LUOGHI </h4>
+
+		    <form action="multiscope_views" method="post">
+		      <div class="row justify-content-center">
+			<div class="form-inline my-2 my-lg-0">
+			  {% csrf_token %}
+			  <input class="form-control mr-sm-2" name='input_query' type="search"
+				 placeholder="Search*" aria-label="Search">
+			</div>
+
+			<div class="px-md-1">
+			  <div class="form-group">
+			    {% csrf_token %}
+			    <select class='form-control my-2 my-lg-0' name="input_selection">
+			      <option value="PERSON">PERSONE</option>
+			      <option value="FILENAME">NOME DOCUMENTO</option>
+			      <option value="LOCATION">LUOGO</option>
+			    </select>
+			  </div>
+			</div>
+
+			<div class="px-md-1">
+			  <div class="form-group">
+			    {% csrf_token %}
+			    <select class='form-control my-2 my-lg-0' name="file_type">
+			      <option value="None">Tipo File (- Qualsiasi)</option>
+			      <option value="Altro">Altro</option>
+			      <option value="Accertamento">ACCERTAMENTO</option>
+			      <option value="Allegato">ALLEGATO</option>
+			      <option value="Appello">APPELLO</option>
+			      <option value="Appunti">APPUNTI</option>
+			      <option value="Atto">ATTO</option>
+			      <option value="Autorizzazione">AUTORIZZAZIONE</option>
+			      <option value="Bozza">BOZZA</option>
+			      <option value="Capitolato">CAPITOLATO</option>
+			      <option value="Citazione">CITAZIONE</option>
+			      <option value="Conclusione">CONCLUSIONE</option>
+			      <option value="Consulenza">CONSULENZA</option>
+			      <option value="Contratto">CONTRATTO</option>
+			      <option value="Dichiarazione">DICHIARAZIONE</option>
+			      <option value="Decreto">DECRETO</option>
+			      <option value="Delega">DELEGA</option>
+			      <option value="Denuncia">DENUNCIA</option>
+			      <option value="Des. Sost.">DES. SOST.</option>
+			      <option value="Diffida">DIFFIDA</option>
+			      <option value="Fattura">FATTURA</option>
+			      <option value="Giudizio">GIUDIZIO</option>
+			      <option value="Indagine">INDAGINE</option>
+			      <option value="Informativa">INFORMATIVA</option>
+			      <option value="Interrogatorio">INTERROGATORIO</option>
+			      <option value="Imputazione">IMPUTAZIONE</option>
+			      <option value="Istanza">ISTANZA</option>
+			      <option value="Legge">LEGGE</option>
+			      <option value="Lettera">LETTERA</option>
+			      <option value="Memoria">MEMORIA</option>
+			      <option value="Nomina">NOMINA</option>
+			      <option value="Nota">NOTA</option>
+			      <option value="Opposizione">OPPOSIZIONE</option>
+			      <option value="Ordinanza">ORDINANZA</option>
+			      <option value="Parcella">PARCELLA</option>
+			      <option value="Parere">PARERE</option>
+			      <option value="Perizia">PERIZIA</option>
+			      <option value="Pignoramento">PIGNORAMENTO</option>
+			      <option value="Precisazioni">PRECISAZIONI</option>
+			      <option value="Preventivo">PREVENTIVO</option>
+			      <option value="Procedimento">PROCEDIMENTO</option>
+			      <option value="Procura">PROCURA</option>
+			      <option value="Proroga">PROROGA</option>
+			      <option value="Querela">QUERELA</option>
+			      <option value="Quietanza">QUIETANZA</option>
+			      <option value="Regolamento">REGOLAMENTO</option>
+			      <option value="Relata di notifica">RELATA DI NOTIFICA</option>
+			      <option value="Relazione">RELAZIONE</option>
+			      <option value="Revoca">REVOCA</option>
+			      <option value="Richiesta">RICHIESTA</option>
+			      <option value="Ricorso">RICORSO</option>
+			      <option value="Rinuncia">RINUNCIA</option>
+			      <option value="Risarcimento">RISARCIMENTO</option>
+			      <option value="Riscontro">RISCONTRO</option>
+			      <option value="Sentenza">SENTENZA</option>
+			      <option value="Sollecito">SOLLECITO</option>
+			      <option value="Stenotipia">STENOTIPIA</option>
+			      <option value="Udienza">UDIENZA</option>
+			      <option value="Verbale">VERBALE</option>
+			    </select>
+			  </div>
+			</div>
+
+			<div class="pl-md-1">
+			  <div class="form-group">
+			    {% csrf_token %}
+			    <select class='form-control my-2 my-lg-0' name="input_deep">
+			      <option value="1">LEVEL ONE</option>
+			      <option value="2">LEVEL TWO</option>
+			      <option value="3">LEVEL TREE</option>
+			    </select>
+			  </div>
+
+			</div>
+			<div class="pl-md-1">
+			  <div class="form-group">
+			    <button type="submit" style="margin-right: 16px" class="btn btn-default">
+			      Submit
+			    </button>
+			  </div>
+			</div>
+
+		      </div>
+		    </form>
+		  </div>
+		</div>
+	      </div>
+	    </div>
+
+	    <div class="row justify-content-center">
+	      <div class="col-md-8">
+		<div class="card card-profile">
+		  <div class="card-body">
+
+		    <h4> ID PROCEDIMENTO </h4>
+		    <form action="procid_views" method="post">
+		      <div class="row justify-content-center">
+
+			<div class="pr-md-1">
+			  <div class="form-inline">
+			    {% csrf_token %}
+			    <input class="form-control mr-sm-2" name="code_input" type="number"
+				   placeholder="numero*">
+			  </div>
+			</div>
+			<div class="pr-md-1">
+			  <div class="form-inline my-2 my-lg-0">
+			    {% csrf_token %}
+			    <input class="form-control mr-sm-2" name="date_input" type="number"
+				   placeholder="anno*">
+			  </div>
+			</div>
+			<div class="pr-md-1">
+			  <div class="form-inline my-2 my-lg-0">
+			    {% csrf_token %}
+			    <input class="form-control mr-sm-2" name='mode_input' type="number"
+				   placeholder="mod.">
+			  </div>
+			</div>
+
+
+
+			<div class="form-group">
+			  {% csrf_token %}
+			  <select class='form-control my-2 my-lg-0' name="input_selection">
+			    <option value="RGNR">RGNR</option>
+			    <option value="RG">RG</option>
+			    <option value="RG-GIP">RG-GIP</option>
+			    <option value="RG-GUP">RG-GUP</option>
+			    <option value="RG-PM">RG-PM</option>
+			    <option value="RG-APP">RG-APP</option>
+			    <option value="RG-DIB">RG-DIB</option>
+			    <option value="REG.SENT.">REG.SENT. </option>
+			  </select>
+			</div>
+
+			<div class="form-group">
+			  {% csrf_token %}
+			  <select class='form-control my-2 my-lg-0' name="input_deep">
+			    <option value="1">LEVEL ONE</option>
+			    <option value="2">LEVEL TWO</option>
+			    <option value="3">LEVEL TREE</option>
+			  </select>
+			</div>
+
+
+			<div class="pl-md-1">
+			  <div class="form-group">
+			    <button type="submit" style="margin-right: 16px" class="btn btn-default">
+			      Submit
+			    </button>
+			  </div>
+			</div>
+
+		      </div>
+		    </form>
+		  </div>
+		</div>
+	      </div>
+	    </div>
+
+
+	    <div class="row justify-content-center">
+	      <div class="col-md-8">
+		<div class="card card-profile">
+		  <div class="card-body">
+
+		    <h4> DECRETI </h4>
+		    <form action="decrid_views" method="post">
+		      <div class="row justify-content-center">
+			<div class="pr-md-1">
+			  <div class="form-inline">
+			    {% csrf_token %}
+			    <input class="form-control mr-sm-2" name='decrid_art' type="number"
+				   placeholder="art.*" aria-label="art">
+			  </div>
+			</div>
+			<div class="form-group">
+			  {% csrf_token %}
+			  <select class='form-control my-2 my-lg-0' name="decrid_opt">
+			    <option value="None">-</option>
+			    <option value="BIS">BIS</option>
+			    <option value="TER">TER</option>
+			    <option value="QUATER">QUATER</option>
+			    <option value="QUINQUIES">QUINQUIES</option>
+			    <option value="SEXIES">SEXIES</option>
+			    <option value="SEPTIES">SEPTIES</option>
+			    <option value="OCTIES">OCTIES</option>
+			    <option value="NOVIES">NOVIES</option>
+			    <option value="DECIES">DECIES</option>
+			    <option value="UNDECIES">UNDECIES</option>
+			    <option value="DUODECIES">DUODECIES</option>
+			  </select>
+			</div>
+			<div class="pr-md-1">
+			  <div class="form-inline my-2 my-lg-0">
+			    {% csrf_token %}
+			    <input class="form-control mr-sm-2" name='decrid_comma' type="number"
+				   placeholder="comma" aria-label="comma">
+			  </div>
+			</div>
+
+			<div class="pr-md-1">
+			  <div class="form-inline my-2 my-lg-0">
+			    {% csrf_token %}
+			    <input class="form-control mr-sm-2" name='decrid_lett' type="text"
+				   placeholder="lett." aria-label="lett.">
+			  </div>
+			</div>
+
+
+			<div class="pr-md-1">
+			  <div class="form-inline my-2 my-lg-0">
+			    {% csrf_token %}
+			    <input class="form-control mr-sm-2" name='decrid_num' type="number"
+				   placeholder="num." aria-label="num.">
+			  </div>
+			</div>
+
+
+			<div class="pr-md-1">
+			  <div class="form-inline my-2 my-lg-0">
+			    {% csrf_token %}
+			    <input class="form-control mr-sm-2" name='decrid_year' type="number"
+				   placeholder="year" aria-label="year">
+			  </div>
+			</div>
+
+			<div class="form-group">
+			  {% csrf_token %}
+			  <select class='form-control my-2 my-lg-0' name="input_selection">
+			    <option value="DLGS">DLGS</option>
+			    <option value="D.P.R.">D.P.R.</option>
+			    <option value="LEGGE">LEGGE</option>
+			    <option value="REGIO DECRETO">REGIO DECRETO</option>
+			    <option value="D.L.">D.L.</option>
+			    <option value="D.M.">D.M.</option>
+			  </select>
+			</div>
+			<div class="form-group">
+			  {% csrf_token %}
+			  <select class='form-control my-2 my-lg-0' name="input_deep">
+			    <option value="1">LEVEL ONE</option>
+			    <option value="2">LEVEL TWO</option>
+			    <option value="3">LEVEL TREE</option>
+			  </select>
+			</div>
+
+			<div class="pl-md-1">
+			  <div class="form-group">
+			    <button type="submit" style="margin-right: 16px" class="btn btn-default">
+			      Submit
+			    </button>
+			  </div>
+			</div>
+
+		      </div>
+		    </form>
+		  </div>
+		</div>
+	      </div>
+	    </div>
+
+
+	    <div class="row justify-content-center">
+	      <div class="col-md-8">
+		<div class="card card-profile">
+		  <div class="card-body">
+
+		    <h4> ARTICOLI </h4>
+		    <form action="art_views" method="post">
+		      <div class="row justify-content-center">
+			<div class="pr-md-1">
+			  <div class="form-inline">
+			    {% csrf_token %}
+			    <input class="form-control mr-sm-2" name='art_num' type="number"
+				   placeholder="art.*" aria-label="num">
+			  </div>
+			</div>
+			<div class="form-group">
+			  {% csrf_token %}
+			  <select class='form-control my-2 my-lg-0' name="art_opt">
+			    <option value="None">-</option>
+			    <option value="BIS">BIS</option>
+			    <option value="TER">TER</option>
+			    <option value="QUATER">QUATER</option>
+			    <option value="QUINQUIES">QUINQUIES</option>
+			    <option value="SEXIES">SEXIES</option>
+			    <option value="SEPTIES">SEPTIES</option>
+			    <option value="OCTIES">OCTIES</option>
+			    <option value="NOVIES">NOVIES</option>
+			    <option value="DECIES">DECIES</option>
+			    <option value="UNDECIES">UNDECIES</option>
+			    <option value="DUODECIES">DUODECIES</option>
+			  </select>
+			</div>
+			<div class="pr-md-1">
+			  <div class="form-inline my-2 my-lg-0">
+			    {% csrf_token %}
+			    <input class="form-control mr-sm-2" name='art_comma' type="number"
+				   placeholder="comma" aria-label="comma">
+			  </div>
+			</div>
+			<div class="pr-md-1">
+			  <div class="form-inline my-2 my-lg-0">
+			    {% csrf_token %}
+			    <input class="form-control mr-sm-2" name='art_lett' type="search"
+				   placeholder="lett." aria-label="lett">
+			  </div>
+			</div>
+
+			<div class="form-group">
+			  {% csrf_token %}
+			  <select class='form-control my-2 my-lg-0' name="input_selection">
+			    <option value="C.C.">C.C.</option>
+			    <option value="C.P.C.">C.P.C.</option>
+			    <option value="C.P.">C.P.</option>
+			    <option value="C.P.P.">C.P.P.</option>
+			    <option value="C.A.">C.A.</option>
+			    <option value="C.P.A.">C.P.A.</option>
+			    <option value="C.D.S.">C.D.S.</option>
+			    <option value="COSTITUZIONE">COSTITUZIONE</option>
+			    <option value="CORTE COSTITUZIONALE">CORTE COSTITUZIONALE</option>
+			    <option value="LEGGE REGIONALE">LEGGE REGIONALE</option>
+			    <option value="TESTO UNICO">TESTO UNICO</option>
+
+			  </select>
+			</div>
+			<div class="form-group">
+			  {% csrf_token %}
+			  <select class='form-control my-2 my-lg-0' name="input_deep">
+			    <option value="1">LEVEL ONE</option>
+			    <option value="2">LEVEL TWO</option>
+			    <option value="3">LEVEL TREE</option>
+			  </select>
+			</div>
+
+			<div class="pl-md-1">
+			  <div class="form-group">
+			    <button type="submit" style="margin-right: 16px" class="btn btn-default">
+			      Submit
+			    </button>
+			  </div>
+			</div>
+
+		      </div>
+		    </form>
+		  </div>
+		</div>
+	      </div>
+	    </div>
+
+	    <div class="row justify-content-center">
+	      <div class="col-md-8">
+		<div class="card card-profile">
+		  <div class="card-body">
+		    <h4> CASSAZIONE </h4>
+		    <form action="{% url 'cass_views' %}" method="post">
+		      <div class="row justify-content-center">
+			<div class="pr-md-1">
+			  <div class="form-inline">
+			    {% csrf_token %}
+			    <input class="form-control mr-sm-2" name='cass_num' type="search"
+				   placeholder="num.*" aria-label="num">
+			  </div>
+			</div>
+			<div class="pr-md-1">
+			  <div class="form-inline my-2 my-lg-0">
+			    {% csrf_token %}
+			    <input class="form-control mr-sm-2" name='cass_year' type="search"
+				   placeholder="year" aria-label="year">
+			  </div>
+			</div>
+
+			<div class="form-group">
+			  {% csrf_token %}
+			  <select class='form-control my-2 my-lg-0' name="cass_sez">
+			    <option value="NoSez">NoSez</option>
+			    <option value="SEZ. UN.">SEZ. UN.</option>
+			    <option value="I">I</option>
+			    <option value="II">II</option>
+			    <option value="III">III</option>
+			    <option value="IV">IV</option>
+			    <option value="V">V</option>
+			    <option value="VI">VI</option>
+			    <option value="VII">VII</option>
+
+			  </select>
+			</div>
+
+
+			<div class="form-group">
+			  {% csrf_token %}
+			  <select class='form-control my-2 my-lg-0' name="cass_type">
+			    <option value="GEN.">GEN.</option>
+			    <option value="CIV.">CIV.</option>
+			    <option value="PEN.">PEN.</option>
+			  </select>
+			</div>
+
+			<div class="form-group">
+			  {% csrf_token %}
+			  <select class='form-control my-2 my-lg-0' name="input_deep">
+			    <option value="1">LEVEL ONE</option>
+			    <option value="2">LEVEL TWO</option>
+			    <option value="3">LEVEL TREE</option>
+			  </select>
+			</div>
+
+			<div class="pl-md-1">
+			  <div class="form-group">
+			    <button type="submit" style="margin-right: 16px" class="btn btn-default">
+			      Submit
+			    </button>
+			  </div>
+			</div>
+
+		      </div>
+		    </form>
+		  </div>
+		</div>
+	      </div>
+	    </div>
+
+	  </div>
+	</div>
+</div>
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %} {% endblock javascripts %}

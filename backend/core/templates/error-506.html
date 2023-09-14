@@ -1,0 +1,47 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %} Error 506 {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<link href="{% static 'assets/css/ellie.css' %}" rel="stylesheet" />
+<link href="{% static 'assets/css/navbar.css' %}" rel="stylesheet" />
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-auto bg-dark sticky-top">
+      <div class="d-flex flex-sm-column flex-row flex-nowrap bg-dark align-items-center sticky-top">
+        <ul
+          class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center justify-content-between w-100 px-2 align-items-center">
+          <li class="nav-item">
+            <a href="{% url 'search_options' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+               data-bs-placement="right" data-bs-original-title="Home">
+              <i class="bi bi-back fs-1"></i>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-sm p-3 min-vh-100">
+
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card card-profile">
+            <div class="card-body">
+              <h6 class="card-category text-gray">Error 506</h6>
+              <h4 class="card-title">
+                Server Error - Database not found
+              </h4>
+              <a href="/" class="btn btn-primary btn-round">Home</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endblock content %}
+
+    <!-- Specific Page JS goes HERE  -->
+    {% block javascripts %}{% endblock javascripts %}

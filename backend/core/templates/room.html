@@ -1,0 +1,92 @@
+<!-- chat/templates/room.html -->
+
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %} Communicator Room {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<link href="{% static 'assets/css/ellie.css' %}" rel="stylesheet" />
+<link href="{% static 'assets/css/navbar.css' %}" rel="stylesheet" />
+<style>
+
+ #chatLog {
+   height: 642px;
+   width: 1086px;
+   background-color: #FFFFFF;
+   resize: none;
+ }
+
+ #onlineUsersSelector {
+   height: 300px;
+ }
+
+
+ body, button, input, select, textarea {
+   font-family: "Monospace", sans-serif; 
+ }
+
+</style>
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-auto bg-dark sticky-top">
+      <div class="d-flex flex-sm-column flex-row flex-nowrap bg-dark align-items-center sticky-top">
+        <ul
+          class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center justify-content-between w-100 px-2 align-items-center">
+          <li class="nav-item">
+            <a href="javascript:history.back()" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+               data-bs-placement="right" data-bs-original-title="Home">
+              <i class="bi bi-back fs-1"></i>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-sm p-3 min-vh-100">
+
+
+
+      <!DOCTYPE html>
+      <html lang="en">
+	<head>
+	</head>
+	<body>
+	  <div class="container mt-3 p-5">
+	    <h2>Communicator chat-room</h2>
+	    <div class="row">
+              <div class="col-12 col-md-8">
+		<div class="mb-2">
+		  <label for="chatLog">Room: #{{ room.name }}</label>
+		  <textarea class="form-control" id="chatLog" readonly></textarea>
+		</div>
+		<div class="input-group">
+		  <input type="text" class="form-control" id="chatMessageInput" placeholder="Enter your chat message">
+		  <div class="input-group-append">
+		    <button class="btn btn-success" id="chatMessageSend" type="button">Send</button>
+		  </div>
+		</div>
+              </div>
+              <div hidden class="col-12 col-md-4">
+		<label for="onlineUsers">Online users</label>
+		<select multiple class="form-control" id="onlineUsersSelector">
+		</select>
+              </div>
+	    </div>
+	    {{ room.name|json_script:"roomName" }}
+	  </div>
+    </div>
+	</body>
+      </html>
+
+
+{% endblock content %}
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script src="{% static 'assets/js/chat/room.js' %}"></script>
+{% endblock javascripts %}

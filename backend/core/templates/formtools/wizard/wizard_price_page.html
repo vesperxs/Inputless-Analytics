@@ -1,0 +1,211 @@
+{% extends "layouts/base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% load static %}
+
+{% block stylesheets %}
+<link href="{% static 'assets/css/solid.css' %}" rel="stylesheet" />
+{% endblock stylesheets %}
+
+
+{% block head %}
+{{ wizard.form.media }}
+{% endblock %}
+
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta name="description" content="Login" />
+  <meta name="author" content="Vespertilio" />
+  <title>Inputless Cloud Checkout</title>
+  <!-- Favicon-->
+  <link rel="icon" type="image/x-icon" href="static/assets/img/favicon.ico" />
+</head>
+
+<body class="d-flex flex-column">
+  <main class="flex-shrink-0">
+      <div class="container py-5 h-100">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+	  
+	  <section class="pricing section">
+            <div class="container-sm">
+	      <div class="pricing-inner section-inner">
+			<div class="pricing-tables-wrap">
+			  <div class="pricing-table">
+			    <div class="pricing-table-inner is-revealing">
+			      <div class="pricing-table-main">
+			
+				<div class="small text-uppercase fw-bold text-muted"><i class="bi bi-star-fill text-warning"></i> Professional</div>
+
+				<div class="pricing-table-header pb-24">
+				  <div class="pricing-table-price"><span class="pricing-table-price-currency h2"></span><span class="pricing-table-price-amount h1"></span><span class="text-xs"></span></div>
+				</div>
+				<ul class="pricing-table-features list-reset text-xs">
+				  <li>
+				    <span>6 users</span>
+				  </li>
+				  <li>
+				    <span>30 GB Storage</span>
+				  </li>
+				  <li>
+				    <span>Full Text Search</span>
+				  </li>
+				  <li>
+				    <span>Full Graph Exploration</span>
+				  </li>
+				  <li>
+				    <span>Private Domain</span>
+				  </li>
+				  <li>
+				    <span>DOC, DOCX, PDF, EXEL, CSV scanner</span>
+				  </li>
+				  <li>
+				    <span>Dedicated Support</span>
+				  </li>
+				  <li>
+				    <span>No OCR</span>
+				  </li>
+				</ul>
+			      </div>
+			      <form action="" method="post">{% csrf_token %}
+				<table>
+				  {{ wizard.management_form }}
+				  {% if wizard.form.forms %}
+				  {{ wizard.form.management_form }}
+				  {% for form in wizard.form.forms %}
+				  {{ form }}
+				  {% endfor %}
+				  {% else %}
+				  {{ wizard.form }}
+				  {% endif %}
+				</table>
+			
+				<div class="d-flex justify-content-center">
+				  <button class="button button-primary button-shadow button-block" value="{% trans " submit" %}" type="submit">
+				    Register
+				  </button>
+				</div>
+			      </form>
+			    </div>
+			  </div>
+			</div>
+
+
+			<div class="pricing-tables-wrap">
+			  <div class="pricing-table">
+			    <div class="pricing-table-inner is-revealing">
+			      <div class="pricing-table-main">
+
+				<div class="small text-uppercase fw-bold text-muted">Demo</div>
+				<div class="pricing-table-header pb-24">
+				  <div class="pricing-table-price"><span class="pricing-table-price-currency h2"></span><span class="pricing-table-price-amount h1"></span><span class="text-xs"></span></div>
+				</div>
+				<ul class="pricing-table-features list-reset text-xs">
+				  <li>
+				    <span>1 user</span>
+				  </li>
+
+				  <li>
+				    <span>5 GB Storage</span>
+				  </li>
+				  <li>
+				    <span>Full Text Search</span>
+				  </li>
+				  <li>
+				    <span>Full Graph Exploration</span>
+				  </li>
+				  <li>
+				    <span>Private Domain</span>
+				  </li>
+				  <li>
+				    <span>DOC, DOCX, PDF, EXEL, CSV scanner</span>
+				  </li>
+				  <li>
+				    <span>No OCR</span>
+				  </li>
+
+				  <li>
+				    <span>No Support</span>
+				  </li>
+
+
+				</ul>
+			      </div>
+			      <form action="" method="post">{% csrf_token %}
+				<table>
+				  {{ wizard.management_form }}
+				  {% if wizard.form.forms %}
+				  {{ wizard.form.management_form }}
+				  {% for form in wizard.form.forms %}
+				  {{ form }}
+				  {% endfor %}
+				  {% else %}
+				  {{ wizard.form }}
+				  {% endif %}
+				</table>
+				
+				<div class="d-flex justify-content-center">
+				  <button class="button button-primary button-shadow button-block" value="{% trans " submit" %}" type="submit">
+				    Register
+				  </button>
+				</div>
+			      </form>
+
+			    </div>
+			  </div>
+
+			  <div class="pricing-tables-wrap">
+			    <div class="pricing-table">
+			      <div class="pricing-table-inner is-revealing">
+				<div class="pricing-table-main">
+
+				  <div class="small text-uppercase fw-bold text-muted">Enterprise</div>
+				  <div class="pricing-table-header pb-24">
+				    <div class="pricing-table-price"><span class="pricing-table-price-currency h2"></span><span class="pricing-table-price-amount h1"></span><span class="text-xs"></span></div>
+				  </div>
+				  <ul class="pricing-table-features list-reset text-xs">
+				    <li>
+				      <span>Unlimited User</span>
+				    </li>
+				    <li>
+				      <span>Custom Storage Options</span>
+				    </li>
+				    <li>
+				      <span>Custom NLP Pipeline</span>
+				    </li>
+				    <li>
+				      <span>Full Text Search</span>
+				    </li>
+				    <li>
+				      <span>Full Graph Exploration</span>
+				    </li>
+				    <li>
+				      <span>DOC, DOCX, PDF, EXEL, CSV scanner</span>
+				    </li>
+				    <li>
+				      <span>Dedicated Support</span>
+				    </li>
+				  </ul>
+				</div>
+				<div class="pricing-table-cta mb-8">
+				  <a class="button button-primary button-shadow button-block" href="#">Contact us</a>
+				</div>
+			      </div>
+			    </div>
+	  </section>
+
+  </main>
+</body>
+
+</html>
+{% endblock content %}
+</body>
+
+</html>
+

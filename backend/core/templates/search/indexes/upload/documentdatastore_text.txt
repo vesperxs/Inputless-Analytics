@@ -1,0 +1,4 @@
+{{object.title}}
+{{object.extracted_text}}
+{{ object.body }}
+

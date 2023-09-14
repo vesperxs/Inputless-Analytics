@@ -1,0 +1,82 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Index {% endblock %} 
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<link href="{% static 'assets/css/gradient.css' %}" rel="stylesheet" />
+<link href="{% static 'assets/css/checkout.css' %}" rel="stylesheet" />
+<style>
+   body { min-height: 100vh; }
+
+</style>
+{% endblock stylesheets %}
+
+
+
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+      <meta name="description" content="Inputless-DB-site-home-page" />
+      <meta name="author" content="Vespertilio" />
+      <title>Subscription Complete</title>
+      <!-- Favicon-->
+      <link rel="icon" type="image/x-icon" href="static/assets/img/favicon.ico" />
+   </head>
+   <body class="d-flex flex-column h-100">
+
+      <main class="flex-shrink-0">
+         <section class="vh-100 gradient-custom">
+            <div class="container py-5 h-100">
+              <div class="row d-flex justify-content-center align-items-center h-100">
+                <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+                  <div class="card bg-dark text-white" style="border-radius: 1rem;">
+                    <div class="card-body p-5 text-center">
+                       
+                        <h2 class="fw-bold mb-2 text-uppercase">Thanks</h2>
+                        Payment Confirmed!<br>
+                        Please log-out than log-in<br>
+
+                        <a href="{% url 'logout' %}" class="btn btn-outline-light btn-lg px-5" 
+                                role="button" aria-pressed="true">Logout</a>
+             
+                    </div>
+
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+      </main>
+      
+   </body>
+   <footer class="gradient-custom py-4 mt-auto">
+      <div class="container px-5">
+         <div class="row align-items-center justify-content-between flex-column flex-sm-row">
+            <div class="col-auto">
+               <div class="small m-0 text-white">Copyright &copy; Vespertilio SRL 2021</div>
+            </div>
+            <div class="col-auto">
+               <a class="link-light small" href="policy.html">Privacy</a>
+               <span class="text-white mx-1">&middot;</span>
+               <a class="link-light small" href="#!">Terms</a>
+               <span class="text-white mx-1">&middot;</span>
+               <a class="link-light small" href="contact.html">Contact</a>
+            </div>
+         </div>
+      </div>
+   </footer>
+</html>
+
+{% endblock content %}
+
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+{% endblock javascripts %}
+<p>complete</p>

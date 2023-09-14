@@ -1,0 +1,41 @@
+form {
+    margin: 0 auto;
+}
+
+label,
+input {
+    /* In order to define widths */
+    display: inline-block;
+}
+
+label {
+    width: 30%;
+    /* Positions the label text beside the input */
+    text-align: right;
+}
+
+label+input {
+    width: 30%;
+    /* Large margin-right to force the next element to the new-line
+             and margin-left to create a gutter between the label and input */
+    margin: 0 30% 0 4%;
+}
+
+
+/* Only the submit button is matched by this selector,
+         but to be sure you could use an id or class for that button */
+
+input+input {
+    float: right;
+}
+.card {
+    position: fixed;
+    display: flex;
+    flex-direction: row;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #1a1c1f;
+    background-clip: border-box;
+    border: 1px solid rgba(0, 0, 0, 0.6);
+    border-radius: 0.25rem;
+}

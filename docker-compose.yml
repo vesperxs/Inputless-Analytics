@@ -1,0 +1,280 @@
+version: '3'
+services:
+
+  web:
+    restart: always
+    container_name: Web
+    image: web_django
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: python3 manage.py runserver 0.0.0.0:3000
+    env_file:
+      - ./.env.dev
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 4024M
+    ports:
+      - "3000:3000"
+    depends_on: 
+      - arangodb
+      - redis
+      - celery
+      - postgres
+      #- clamav
+    links: 
+      - arangodb
+      - celery
+      - postgres
+      #- selenium
+    volumes:
+    #bind local src to the container so changes will be reflected
+      - ./backend:/app
+      - ./docker-data/appdata:/app/media/
+    networks:
+      - main
+
+  webpack:
+    container_name: Webpack
+    restart: always
+    image: dev_webpack
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile-webpack
+    command: npm run start
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 4024M
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./frontend:/assets
+      - ./backend/core/static/assets/js/graph:/graph #inject the compiled files from webpack image
+
+
+  celery:
+    container_name: Celery
+    restart: always
+    build: ./backend
+    command: celery -A core.celery worker --without-heartbeat --without-gossip --without-mingle --concurrency=50 --max-tasks-per-child=50 --loglevel=info 
+    deploy:
+      resources:
+        limits:
+          cpus: '0.90'
+          memory: 9024M
+        reservations:
+          cpus: '0.020'
+          memory: 3G
+    env_file:
+      - ./.env.dev
+    volumes:
+      - ./docker-data/appdata:/app/media/
+    networks: 
+      - main
+      
+  redis:
+    container_name: Redis
+    restart: always
+    image: redis:5-alpine
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 4024M
+    networks: 
+        - main
+
+  postgres:
+    container_name: Postgres
+    restart: always
+    build:
+      context: ./postgresql
+      dockerfile: postgresql-ssl.dockerfile
+    command: -c ssl=on -c ssl_cert_file=/tmp.ssl/server.crt -c ssl_key_file=/tmp.ssl/server.key
+    env_file:
+      - ./.env.dev.db
+    volumes:
+      - ./docker-data/postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+    networks: 
+      - main
+
+  postgres-exporter:
+    image: wrouesnel/postgres_exporter:v0.8.0
+    container_name: PostresExporter
+    restart: always
+    environment:
+      - DATA_SOURCE_NAME=postgres://hello_django:hello_django@postgres:5432/postgres?sslmode=disable
+      - DATA_SOURCE_URI=postgres:5432/postgres?sslmode=disable
+      - DATA_SOURCE_USER=hello_django
+      - DATA_SOURCE_PASS=hello_django
+    ports:
+      - "9187:9187"
+    networks:
+      - main
+    depends_on:
+      - postgres
+    
+#  pgbackups:
+#    container_name: Backup
+#    image: prodrigestivill/postgres-backup-local
+#    restart: always
+#    volumes:
+#      - ./docker-data/backup:/backups
+#    links:
+#      - postgres
+#    depends_on:
+#      - postgres
+#    environment:
+#      - POSTGRES_HOST=postgres
+#      - POSTGRES_DB=hello_django_dev
+#      - POSTGRES_USER=hello_django
+#      - POSTGRES_PASSWORD=hello_django
+#      - POSTGRES_EXTRA_OPTS=-Z9 --schema=public --blobs
+#      - SCHEDULE=@every 10h30m00s
+#      - BACKUP_KEEP_DAYS=7
+#      #- BACKUP_KEEP_WEEKS=4
+#      #- BACKUP_KEEP_MONTHS=6
+#      - HEALTHCHECK_PORT=81
+#    networks:
+#      - main
+#
+  #pgadmin:
+  #  image: dpage/pgadmin4
+  #  restart: always
+  #  environment:
+  #    PGADMIN_DEFAULT_EMAIL: admin@admin.com
+  #    PGADMIN_DEFAULT_PASSWORD: root
+  #  ports:
+  #    - "5050:80"
+  #  networks:
+  #    - main
+  
+  arangodb:
+    container_name: Arango
+    restart: always
+    image: arangodb:3.7.11
+    healthcheck:
+         test: curl -f my-system:8529/_api/version || exit 1
+    ports:
+      - 8529:8529
+    environment:
+      - ARANGO_NO_AUTH=1
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 8024M
+    volumes:
+      - ./docker-data/arangodb_data:/var/lib/arangodb3
+    networks:
+        - main
+
+
+  Prometheus:
+    container_name: Prometheus
+    restart: always
+    image: prom/prometheus:v2.28.1
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+    command:
+      -  "--config.file=/etc/prometheus/prometheus.yml"
+      -  "--storage.tsdb.retention=20d"
+      -  "--storage.tsdb.wal-compression"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 4024M
+    ports:
+      - 9090:9090
+    networks:
+      - main
+
+  grafana:
+    container_name: Grafana
+    user: $DOCKER_UID:$DOCKER_GID
+    restart: always
+    image: grafana/grafana:main
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 4024M
+    ports:
+      - 3060:3000
+    volumes:
+      - ./docker-data/grafana:/var/lib/grafana
+    networks:
+      - main
+  
+  # clamav:
+  #   container_name: clamav-antivirus
+  #   image: clamav/clamav:0.104.0
+  #   #command: clamscan -r /app/media
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '0.50'
+  #         memory: 4024M
+  #   healthcheck:
+  #       test: ["CMD", "./check.sh"]
+  #       interval: 60s
+  #       retries: 3
+  #   volumes:
+  #     - ./docker-data/clam:/var/lib/clamav
+  #     - ./docker-data/appdata:/app/media/
+  #   networks:
+  #     - main
+
+  # selenium:
+  #   container_name: Selenium
+  #   image: selenium/hub
+  #   ports:
+  #     - 4442:4442
+  #     - 4443:4443        
+  #     - 4444:4444
+
+
+  # chrome:
+  #   image: selenium/node-chrome-debug
+  #   shm_size: 2gb
+  #   depends_on:
+  #     - selenium
+  #   environment:
+  #     - SE_EVENT_BUS_HOST=selenium
+  #     - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #     - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #     - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #     - SE_NODE_MAX_SESSIONS=10
+  #   ports:
+  #     - 5901:5900 
+  
+  # firefox:
+  #   image: selenium/node-firefox-debug
+  #   shm_size: 2gb
+  #   depends_on:
+  #     - selenium
+  #   environment:
+  #     - SE_EVENT_BUS_HOST=selenium
+  #     - SE_EVENT_BUS_PUBLISH_PORT=4442
+  #     - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  #     - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+  #     - SE_NODE_MAX_SESSIONS=10
+  #   ports:
+  #     - 5901:5900
+    
+
+volumes:
+  postgres_data:
+  #clam:
+  grafana:
+
+networks:
+  main:
+    driver: "bridge" 

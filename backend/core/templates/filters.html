@@ -1,0 +1,139 @@
+{% extends 'layouts/base.html' %}
+
+{% load static %}
+{% block title %} Page Blank {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<link href="{% static 'assets/css/ellie.css' %}" rel="stylesheet" />
+
+<link href="{% static 'assets/css/navbar.css' %}" rel="stylesheet" />
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+
+
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-auto bg-dark sticky-top">
+      <div class="d-flex flex-sm-column flex-row flex-nowrap bg-dark align-items-center sticky-top">
+	<ul
+	  class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center justify-content-between w-100 px-2 align-items-center">
+	  <li class="nav-item">
+	    <a href="{% url 'home' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+	       data-bs-placement="right" data-bs-original-title="Home">
+	      <i class="bi-house fs-1"></i>
+	    </a>
+	  </li>
+	  <li>
+	    <a href="{% url 'dashboard' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+	       data-bs-placement="right" data-bs-original-title="Customers">
+	      <i class="bi-speedometer2 fs-1"></i>
+	    </a>
+	  </li>
+	  <li>
+	    <a href="{% url 'user' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+	       data-bs-placement="right" data-bs-original-title="Customers">
+	      <i class="bi-people fs-1"></i>
+	    </a>
+	  </li>
+	  <li>
+	    <a href="{% url 'two_factor:profile' %}" class="nav-link py-3 px-2" title=""
+	       data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Dashboard">
+	      <i class="bi-key fs-1"></i>
+	    </a>
+	  </li>
+	  <li>
+
+	    <li>
+	      <a href="{% url 'progress_bar_upload' %}" class="nav-link py-3 px-2" title=""
+		 data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Orders">
+		<i class="bi-upload fs-1"></i>
+	      </a>
+	    </li>
+	    <li>
+	      <a href="{% url 'filters' %}"  class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+		 data-bs-placement="right" data-bs-original-title="Orders">
+		<i class="bi-filter fs-1"></i>
+	      </a>
+	    </li>
+	    <li>
+
+	      <li>
+		<a href="{% url 'search_options' %}" class="nav-link py-3 px-2" title=""
+		   data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Orders">
+		  <i class="bi-diagram-3 fs-1"></i>
+		</a>
+	      </li>
+
+
+	      <li>
+		<a href="search/" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+		   data-bs-placement="right" data-bs-original-title="Orders">
+		  <i class="bi-search fs-1"></i>
+		</a>
+	      </li>
+	      <li>
+		<a href="{% url 'table' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+		   data-bs-placement="right" data-bs-original-title="Products">
+		  <i class="bi-table fs-1"></i>
+		</a>
+	      </li>
+	      <li>
+		<a href="ticket" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+		   data-bs-placement="right" data-bs-original-title="Products">
+		  <i class="bi bi-envelope fs-1"></i>
+		</a>
+	      </li>
+					
+	      <li>
+		<a href="{% url 'logout' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+		   data-bs-placement="right" data-bs-original-title="Orders">
+		  <i class="bi-box-arrow-right fs-1"></i>
+		</a>
+	      </li>
+
+	</ul>
+      </div>
+    </div>
+    <div class="col-sm p-3 min-vh-100">
+
+
+      <div class="row">
+	<div class="col-md-12">
+	  <div class="card card-profile">
+	    <div class="card-body">
+
+	      <h4> Upload Filter List </h4>
+
+	      <form enctype="multipart/form-data" action="{% url 'filter_results' %}" method="post">
+		<input type="file" class="form-control-file" name="file_uploaded" />
+		{% csrf_token %}
+		<input type="submit" class="btn btn-primary pull-right" />
+	      </form>
+	      <table id="gallery" class="table table-bordered">
+		<thead>
+		  <tr>
+		    <th>Imported</th>
+		  </tr>
+		</thead>
+		<tbody>
+		  <tr>
+		    <td>{{ data|linebreaks }}</td>
+		  </tr>
+
+		</tbody>
+	      </table>
+
+
+	    </div>
+	  </div>
+	</div>
+      </div>
+    </div>
+    {% endblock content %}
+
+    <!-- Specific Page JS goes HERE  -->
+    {% block javascripts %} {% endblock javascripts %}

@@ -1,0 +1,80 @@
+{% extends "layouts/base.html" %}
+{% load i18n %}
+{% load bootstrap5 %}
+{% load crispy_forms_tags %}
+
+{% load static %}
+
+{% block stylesheets %}
+
+<link href="{% static 'assets/css/solid.css' %}" rel="stylesheet" />
+
+<style>
+ .justify-content-center {
+   -ms-flex-pack: center !important;
+   justify-content: center !important;
+   padding-top: 23%;
+ }
+</style>
+{% endblock stylesheets %}
+
+
+
+{% block head %}
+{{ wizard.form.media }}
+{% endblock %}
+
+
+
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="Login" />
+    <meta name="author" content="Vespertilio" />
+    <title>Inputless Cloud Checkout</title>
+    <!-- Favicon-->
+    <link rel="icon" type="image/x-icon" href="static/assets/img/favicon.ico" />
+  </head>
+
+
+  <body class="d-flex flex-column">
+    <main class="flex-shrink-0">
+      <div class="container py-5 h-100">
+	<div class="row d-flex justify-content-center align-items-center h-100">
+	  
+	  <section class="pricing section">
+            <div class="container-sm">
+	      <div class="pricing-inner section-inner">
+		<div class="pricing-tables-wrap">
+		  <div class="pricing-table">
+		    <div class="pricing-table-inner is-revealing">
+		      <div class="pricing-table-main">
+
+			<h2 class="fw-bold mb-2 text-uppercase">Thanks</h2>
+                        Account Registered!<br>
+                        Please follow this link to complete the activation!<br>
+                        {{link}}
+		      </div>
+		    </div>
+		  </div>
+		</div>
+	      </div>
+	  </section>
+
+    </main>
+  </body>
+
+</html>
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+{% endblock javascripts %}
+
+
+

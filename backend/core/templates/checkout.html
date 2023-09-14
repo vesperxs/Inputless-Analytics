@@ -1,0 +1,413 @@
+{% extends "layouts/base.html" %}
+{% load i18n %}
+{% load bootstrap5 %}
+{% load crispy_forms_tags %}
+
+{% load static %}
+
+{% block stylesheets %}
+<link href="{% static 'assets/css/gradient.css' %}" rel="stylesheet" />
+<link href="{% static 'assets/css/checkout.css' %}" rel="stylesheet" />
+
+<style>
+
+.row {
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-around;
+ }
+ .StripeElement {
+   box-sizing: border-box;
+
+   height: 40px;
+
+   padding: 10px 12px;
+
+   border: 1px solid transparent;
+   border-radius: 4px;
+   background-color: white;
+
+   box-shadow: 0 1px 3px 0 #e6ebf1;
+   -webkit-transition: box-shadow 150ms ease;
+   transition: box-shadow 150ms ease;
+ }
+
+ .StripeElement--focus {
+   box-shadow: 0 1px 3px 0 #cfd7df;
+ }
+
+ .StripeElement--invalid {
+   border-color: #fa755a;
+ }
+
+ .StripeElement--webkit-autofill {
+   background-color: #fefde5 !important;
+ }
+
+ .hidden {
+   display: none;
+ }
+
+
+ #submit:hover {
+   filter: contrast(120%);
+ }
+
+ #submit {
+   font-feature-settings: "pnum";
+   --body-color: #f7fafc;
+   --button-color: #556cd6;
+   --accent-color: #556cd6;
+   --gray-border: #e3e8ee;
+   --link-color: #fff;
+   --font-color: #697386;
+   --body-font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+   --radius: 4px;
+   --form-width: 400px;
+   -webkit-box-direction: normal;
+   word-wrap: break-word;
+   box-sizing: border-box;
+   font: inherit;
+   overflow: visible;
+   -webkit-appearance: button;
+   -webkit-font-smoothing: antialiased;
+   margin: 0;
+   font-family: inherit;
+   -webkit-tap-highlight-color: transparent;
+   font-size: 16px;
+   padding: 0 12px;
+   line-height: 32px;
+   outline: none;
+   text-decoration: none;
+   text-transform: none;
+   margin-right: 8px;
+   height: 36px;
+   border-radius: var(--radius);
+   color: #fff;
+   border: 0;
+   margin-top: 16px;
+   font-weight: 600;
+   cursor: pointer;
+   transition: all .2s ease;
+   display: block;
+   box-shadow: 0 4px 5.5px 0 rgba(0, 0, 0, .07);
+   width: 100%;
+   background: var(--button-color);
+ }
+ 
+ .card {
+   position: relative;
+   display: flex;
+   flex-direction: row;
+   min-width: 0;
+   word-wrap: break-word;
+   background-color: #15181c;
+   background-clip: border-box;
+   border: 1px solid rgba(0, 0, 0, 0.6);
+   border-radius: 0.25rem;
+   align-items: center;
+ }
+</style>
+{% endblock stylesheets %}
+
+
+
+{% block head %}
+{{ wizard.form.media }}
+{% endblock %}
+
+
+
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="Login" />
+    <meta name="author" content="Vespertilio" />
+    <title>Inputless Cloud Checkout</title>
+    <!-- Favicon-->
+    <link rel="icon" type="image/x-icon" href="static/assets/img/favicon.ico" />
+    <script src="https://js.stripe.com/v3/"></script>
+
+</head>
+
+<nav class="navbar navbar-expand-lg">
+    <a class="navbar-brand" href="">Inputless Legal</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span
+            class="navbar-toggler-icon"></span></button>
+</nav>
+
+<body class="d-flex flex-column h-100">
+    <main class="flex-shrink-0">
+        <section class="vh-100 gradient-custom">
+            <div class="container py-5 h-100">
+                <div class="row d-flex justify-content-center align-items-center h-100">
+                    <div class="col-12 col-md-8 col-lg-6">
+                        <div class="card text-white align-items-center" style="border-radius: 1rem;">
+                            <div class="card-body p-5 text-center align-items-center">
+                                <div class="mb-md-5 mt-md-4 pb-5 ">
+                                    <h2 class="fw-bold mb-2 text-uppercase"></h2>
+                                    <h1>Payment</h1>
+				    <br>
+                                    <div class="container ">
+
+                                      <div class="row ">
+                                        {% for p in products %}
+                                        <div class="col-6">
+                                          <div class="card mx-5  style=" border-radius: 10px; border:none; ">
+                                            <div class=" card-body">
+                                              <h5 class="card-title font-weight-bold">{{p.name}}</h5>
+                                              <p class="card-text text-muted"><svg class="bi bi-check" width="1em"
+										   height="1em" viewBox="0 0 16 16" fill="currentColor"
+										   xmlns="http://www.w3.org/2000/svg">
+                                                <path fill-rule="evenodd"
+                                                      d="M10.97 4.97a.75.75 0 0 1 1.071 1.05l-3.992 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.236.236 0 0 1 .02-.022z" />
+                                              </svg>{{p.description}}</p>
+
+                                              {% for plan in p.plan_set.all %}
+                                              <h5>{{ plan.human_readable_price }}</h5>
+                                              <div class="text-right">
+                                                <input type="checkbox" name="{{p.name}}" value="{{p.id}}"
+                                                       onclick="planSelect('{{p.name}}' ,'{{plan.human_readable_price}}', '{{plan.id}}')">
+                                                {% endfor %}
+                                              </div>
+                                            </div>
+                                          </div>
+
+                                        </div>
+
+                                        {% endfor %}
+					</div>
+                                      </div>
+                                      <br><br>
+                                      <hr><br><br>
+                                      <div>
+                                        <div class="row">
+                                          <div class="col-12">
+                                            <p class="text-muted ">Enter card details. Your subscription will start
+                                              immediately</p>
+                                            <div class="row">
+                                              <div class="col-6 text-muted">
+                                                <p>Plan:</p>
+                                                <p>Total:</p>
+                                              </div>
+                                              <div class="col-6 text-right">
+                                                <p id="plan"></p>
+                                                <p id="price"></p>
+                                                <p hidden id="priceId"></p>
+                                              </div>
+
+                                            </div>
+                                            <br>
+                                            <form id="subscription-form">
+                                              <div id="card-element" class="MyCardElement">
+                                                <!-- Elements will create input elements here -->
+                                              </div>
+                                              <!-- We'll put the error messages in this element -->
+                                              <div id="card-errors" role="alert"></div>
+                                              <button id="submit" type="submit">
+                                                <div class="spinner-border  spinner-border-sm text-light hidden"
+                                                     id="spinner" role="status">
+                                                  <span class="sr-only">Loading...</span>
+                                                </div>
+                                                <span id="button-text">Subscribe</span>
+                                              </button>
+                                            </form>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+				</div>
+                            </div>
+			</div>
+        </section>
+    </main>
+    <footer class="py-4 mt-auto">
+      <div class="container px-5">
+        <div class="row align-items-center justify-content-between flex-column flex-sm-row">
+          <div class="col-auto">
+            <div class="small m-0 text-white">Copyright &copy; Vespertilio SRL 2022</div>
+          </div>
+          <div class="col-auto">
+            <a class="link-light small" href="policy.html">Privacy</a>
+            <span class="text-white mx-1">&middot;</span>
+            <a class="link-light small" href="#!">Terms</a>
+            <span class="text-white mx-1">&middot;</span>
+            <a class="link-light small" href="contact.html">Contact</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+</body>
+
+</html>
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script>
+ document.getElementById("submit").disabled = true;
+
+ stripeElements();
+
+ function stripeElements() {
+   stripe = Stripe('pk_test_51KfozPFOcX7ZFqHn0Q1K4mxXzQnN6yKYNTxT9bEpEWQ2waVlwhrIWytjIvb3WISPvwXear7R1mGLOHY8eaqjmsdj00gHCG3V1a');
+
+   if (document.getElementById('card-element')) {
+     let elements = stripe.elements();
+
+     // Card Element styles
+     let style = {
+       base: {
+         color: "#32325d",
+         fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+         fontSmoothing: "antialiased",
+         fontSize: "16px",
+         "::placeholder": {
+           color: "#aab7c4"
+         }
+       },
+       invalid: {
+         color: "#fa755a",
+         iconColor: "#fa755a"
+       }
+     };
+
+
+     card = elements.create('card', { style: style });
+
+     card.mount('#card-element');
+
+     card.on('focus', function () {
+       let el = document.getElementById('card-errors');
+       el.classList.add('focused');
+     });
+
+     card.on('blur', function () {
+       let el = document.getElementById('card-errors');
+       el.classList.remove('focused');
+     });
+
+     card.on('change', function (event) {
+       displayError(event);
+     });
+   }
+
+   let paymentForm = document.getElementById('subscription-form');
+   if (paymentForm) {
+
+     paymentForm.addEventListener('submit', function (evt) {
+       evt.preventDefault();
+       changeLoadingState(true);
+
+
+       // create new payment method & create subscription
+       createPaymentMethod({ card });
+     });
+   }
+
+
+ } 
+
+ function createPaymentMethod({ card }) {
+
+   // Set up payment method for recurring usage
+   let billingName = '{{user.username}}';
+
+   stripe.createPaymentMethod({
+     type: 'card',
+     card: card,
+     billing_details: {
+       name: billingName,
+     },
+   })
+	 .then((result) => {
+	   if (result.error) {
+	     displayError(result);
+	   } else {
+	     const paymentParams = {
+	       price_id: document.getElementById("priceId").innerHTML,
+	       payment_method: result.paymentMethod.id,
+	     };
+	     fetch("/create-sub", {
+	       method: 'POST',
+	       headers: {
+		 'Content-Type': 'application/json',
+		 'X-CSRFToken':'{{ csrf_token }}',
+	       },
+	       credentials: 'same-origin',
+	       body: JSON.stringify(paymentParams),
+	     }).then((response) => {
+	       return response.json(); 
+	     }).then((result) => {
+	       if (result.error) {
+		 // The card had an error when trying to attach it to a customer
+		 throw result;
+	       }
+	       return result;
+	     }).then((result) => {
+	       if (result && result.status === 'active') {
+
+		 window.location.href = '/complete';
+	       };
+	     }).catch(function (error) {
+	       displayError(result.error.message);
+
+	     });
+	   }
+	 });
+ }
+
+
+ var changeLoadingState = function(isLoading) {
+   if (isLoading) {
+     document.getElementById("submit").disabled = true;
+     document.querySelector("#spinner").classList.remove("hidden");
+     document.querySelector("#button-text").classList.add("hidden");
+   } else {
+     document.getElementById("submit").disabled = false;
+     document.querySelector("#spinner").classList.add("hidden");
+     document.querySelector("#button-text").classList.remove("hidden");
+   }
+ };
+ function displayError(event) {
+
+   let displayError = document.getElementById('card-errors');
+   if (event.error) {
+     displayError.textContent = event.error.message;
+   } else {
+     displayError.textContent = '';
+   }
+ }
+
+ function planSelect(name, price, priceId) {
+   console.log(name, price, priceId );
+   var inputs = document.getElementsByTagName('input');
+
+   for(var i = 0; i<inputs.length; i++){
+     inputs[i].checked = false;
+     if(inputs[i].name== name){
+
+       inputs[i].checked = true;
+     }
+   }
+
+   var n = document.getElementById('plan');
+   var p = document.getElementById('price');
+   var pid = document.getElementById('priceId');
+   n.innerHTML = name;
+   p.innerHTML = price;
+   pid.innerHTML = priceId;
+   document.getElementById("submit").disabled = false;
+ }
+
+
+</script>
+{% endblock javascripts %}

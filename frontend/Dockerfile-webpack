@@ -1,0 +1,18 @@
+# Pull base image
+FROM node:alpine
+
+COPY package.json ./
+COPY config/webpack.config.js ./
+
+# Uncomment to production build
+#COPY config/webpack.prod.js ./
+
+RUN mkdir /assets
+
+COPY app.js styles.js /assets/
+
+RUN npm install
+
+EXPOSE 8081
+
+

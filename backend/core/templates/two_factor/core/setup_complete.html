@@ -1,0 +1,49 @@
+{% extends "two_factor/_base_focus.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-sm-auto bg-dark sticky-top">
+			<div class="d-flex flex-sm-column flex-row flex-nowrap bg-dark align-items-center sticky-top">
+				<ul
+					class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center justify-content-between w-100 px-3 align-items-center">
+					<li class="nav-item">
+						<a href="{% url 'home' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+							data-bs-placement="right" data-bs-original-title="Home">
+							<i class="bi-house fs-1"></i>
+						</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+    <div class="col-sm p-3 min-vh-100">
+<div class="row">
+  <div class="col-md-12">
+    <div class="card card-profile">
+      <div class="card-body">
+
+	<h1>{% block title %}{% trans "Enable Two-Factor Authentication" %}{% endblock %}</h1>
+
+	<p>{% blocktrans trimmed %}Congratulations, you've successfully enabled two-factor
+	  authentication.{% endblocktrans %}</p>
+
+	{% if not phone_methods %}
+	<p><a href="{% url 'two_factor:profile' %}"
+	      class="btn btn-block btn-secondary">{% trans "Back to Account Security" %}</a></p>
+	{% else %}
+	<p>{% blocktrans trimmed %}However, it might happen that you don't have access to
+	  your primary token device. To enable account recovery, add a phone
+	  number.{% endblocktrans %}</p>
+
+	<a href="{% url 'two_factor:profile' %}"
+	   class="float-right btn btn-link">{% trans "Back to Account Security" %}</a>
+	<p><a href="{% url 'two_factor:phone_create' %}"
+	      class="btn btn-success">{% trans "Add Phone Number" %}</a></p>
+	{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+	</div>
+{% endblock %}

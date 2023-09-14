@@ -1,0 +1,55 @@
+{% extends 'layouts/base.html' %} {% block title %} Graph Visualizer {% endblock %} {% load static %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<link href="{% static 'assets/css/navbar.css' %}" rel="stylesheet" />
+<link href="{% static 'assets/css/scrollbar.css' %}" rel="stylesheet" /> {% endblock stylesheets %} {% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-auto bg-dark sticky-top">
+            <div class="d-flex flex-sm-column flex-row flex-nowrap bg-dark align-items-center sticky-top">
+                <ul class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center justify-content-between w-100 px-3 align-items-center">
+                    <li class="nav-item">
+                        <a href="{% url 'search_options' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Home">
+                            <i class="bi bi-back fs-1"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="search/" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Orders">
+                            <i class="bi-search fs-1"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'table' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Products">
+                            <i class="bi-table fs-1"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" type="button" data-bs-placement="right" data-bs-original-title="Products" onclick="toggleFullScreen(document.documentElement);">
+                            <i class="bi-arrows-angle-expand fs-1"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip" type="button" data-bs-placement="right" data-bs-original-title="Products" onclick="openFullscreen(document.documentElement);">
+                            <i class="bi bi-tv fs-1"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-sm p-3 min-vh-100">
+            <div id="div"></div>
+            <div style="display:none">{{ data_graph|json_script:"data" }}</div>
+        </div>
+    </div>
+
+</div>
+</div>
+</div>
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script src="{% static 'assets/js/graph/app.js' %}"></script>
+<script src="{% static 'assets/js/plugins/toggleFullScreenDiv.js' %}"></script>
+{% endblock javascripts %}

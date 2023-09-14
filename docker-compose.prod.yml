@@ -1,0 +1,267 @@
+ersion: '3'
+services:
+
+  web:
+    restart: always
+    image: web_django
+    container_name: web
+    build:
+      context: ./
+      dockerfile: Dockerfile.prod
+    env_file:
+      - ./.env.prod
+    ports:
+      - "8000:8000"
+    depends_on: 
+      - arangodb
+      - redis 
+      - celery
+      - postgres
+      - clamav
+    volumes:
+      - ./docker-data/appdata:/app/media/
+      - static_volume:/app/staticfiles
+    healthcheck:
+      test: curl --fail http://localhost:8000 || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    links: 
+      - arangodb 
+      - celery
+      - postgres
+    networks:
+      - main
+
+  nginx:
+    restart: always
+    image: "nginx:latest"
+    container_name: nginx
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - static_volume:/app/staticfiles
+
+
+  # nginx-proxy:
+  #   container_name: nginx-proxy
+  #   build: nginx
+  #   restart: always
+  #   ports:
+  #     - 443:443
+  #     - 80:80
+  #   volumes:
+  #     - certs:/etc/nginx/certs
+  #     - html:/usr/share/nginx/html
+  #     - vhost:/etc/nginx/vhost.d
+  #     - /var/run/docker.sock:/tmp/docker.sock:ro
+  #     - ./logs:/var/log/nginx
+  #     - static_volume:/app/staticfiles
+  #   depends_on:
+  #     - web
+  #   networks:
+  #     - main
+
+  # nginx-proxy-letsencrypt:
+  #   image: jrcs/letsencrypt-nginx-proxy-companion
+  #   env_file:
+  #     - ./.env.prod.proxy-companion
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     - certs:/etc/nginx/certs
+  #     - html:/usr/share/nginx/html
+  #     - vhost:/etc/nginx/vhost.d
+  #     - acme:/etc/acme.sh
+  #   depends_on:
+  #     - nginx-proxy
+  #   networks:
+  #     - main
+
+  celery:
+    container_name: celery
+    restart: always
+    build: ./backend
+    command: celery -A core.celery worker --without-heartbeat --without-gossip --without-mingle --concurrency=50 --max-tasks-per-child=50 
+    deploy:
+      resources:
+        limits:
+          cpus: '0.90'
+          memory: 9024m
+        reservations:
+          cpus: '0.020'
+          memory: 3g
+    env_file:
+      - ./.env.prod
+    volumes:
+      - ./docker-data/appdata:/app/media/
+    networks: 
+      - main
+
+      
+  redis:
+    container_name: redis
+    restart: always
+    image: redis:5-alpine
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 4024m
+    networks: 
+      - main
+
+  postgres:
+    container_name: postgres
+    restart: always
+    build:
+      context: ./postgresql
+      dockerfile: postgresql-ssl.dockerfile
+    command: -c ssl=on -c ssl_cert_file=/tmp.ssl/server.crt -c ssl_key_file=/tmp.ssl/server.key
+    env_file:
+      - ./.env.prod.db
+    volumes:
+      - ./docker-data/postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+    networks: 
+      - main
+
+  postgres-exporter:
+    image: wrouesnel/postgres_exporter:v0.8.0
+    container_name: PostresExporter
+    restart: always
+    environment:
+      - data_source_name=postgres://hello_django:hello_django@postgres:5432/postgres?sslmode=disable
+      - data_source_uri=postgres:5432/postgres?sslmode=disable
+      - data_source_user=hello_django
+      - data_source_pass=hello_django
+    ports:
+      - "9187:9187"
+    networks:
+      - main
+    depends_on:
+      - postgres
+
+
+  pgbackups:
+    container_name: PGBackup 
+    image: prodrigestivill/postgres-backup-local
+    restart: always
+    volumes:
+      - ./docker-data/backup:/backups
+    links:
+      - postgres
+    depends_on:
+      - postgres
+    environment:
+      - postgres_host=postgres
+      - postgres_db=hello_django_dev
+      - postgres_user=hello_django
+      - postgres_password=hello_django
+      - postgres_extra_opts=-z9 --schema=public --blobs
+      - schedule=@every 0h30m00s
+      - backup_keep_days=7
+      - backup_keep_weeks=4
+      - backup_keep_months=6
+      - healthcheck_port=81
+    networks:
+      - main
+  
+  arangodb:
+    container_name: arango
+    restart: always
+    image: arangodb:3.7.11
+    healthcheck:
+         test: curl -f my-system:8529/_api/version || exit 1
+    ports:
+      - 8529:8529
+    environment:
+      - arango_no_auth=1
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 8024m
+    volumes:
+      - ./docker-data/arangodb_data:/var/lib/arangodb3
+    networks:
+        - main
+
+
+  prometheus:
+    container_name: prometheus
+    restart: always
+    image: prom/prometheus:v2.28.1
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+    command:
+      -  "--config.file=/etc/prometheus/prometheus.yml"
+      -  "--storage.tsdb.retention=20d"
+      -  "--storage.tsdb.wal-compression"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 4024m
+    ports:
+      - 9090:9090
+    networks:
+      - main
+
+  grafana:
+    container_name: grafana
+    user: $docker_uid:$docker_gid
+    restart: always
+    image: grafana/grafana:main
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 4024m
+    ports:
+      - 3060:3000
+    volumes:
+      - ./docker-data/grafana:/var/lib/grafana
+    networks:
+      - main
+
+  clamav:
+    container_name: clamav
+    image: clamav/clamav:0.104.0
+    #command: clamscan -r /app/media
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 4024m
+    volumes:
+      - ./docker-data/clam:/var/lib/clamav
+      - ./docker-data/appdata:/app/media/
+    networks:
+      - main
+
+## to configure in production enviroment
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - main
+
+volumes:
+  postgres_data:
+  appdata:
+  arangodb_data:
+  static_volume:
+  #certs:
+  #html:
+  #vhost:
+  #acme:
+
+    
+networks:
+  main:
+    driver: "bridge"

@@ -1,0 +1,16 @@
+global:
+  scrape_interval: 4m
+  evaluation_interval: 4m
+rule_files:
+# — “first.rules”
+# — “second.rules”
+scrape_configs:
+  - job_name: monitoring
+    static_configs:
+      - targets: 
+        - web:8000
+  - job_name: arangodb
+    metrics_path: /_admin/metrics
+    static_configs:
+      - targets:
+        - arangodb:8529

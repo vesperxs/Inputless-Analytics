@@ -1,0 +1,127 @@
+{% extends 'layouts/base.html' %}
+
+{% load static %}
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<style>
+ .btn-primary {
+  float: left;
+ }
+</style>
+<link href="{% static 'assets/css/ellie.css' %}" rel="stylesheet" />
+
+<link href="{% static 'assets/css/navbar.css' %}" rel="stylesheet" />
+<link href="{% static 'assets/css/scrollbar.css' %}" rel="stylesheet" />
+
+{% endblock stylesheets %}
+
+{% block title %}Progress Bar Upload{% endblock %}
+
+
+{% block content %}
+
+<div class="container-fluid">
+	<div class="row">
+	  <div class="col-sm-auto bg-dark sticky-top">
+	    <div class="d-flex flex-sm-column flex-row flex-nowrap bg-dark align-items-center sticky-top">
+	      <ul
+		class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center justify-content-between w-100 px-2 align-items-center">
+		<li class="nav-item">
+		  <a href="{% url 'home' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+		     data-bs-placement="right" data-bs-original-title="Home">
+		    <i class="bi bi-back fs-1"></i>
+		  </a>
+		</li>
+	      </ul>
+	    </div>
+	  </div>
+	  <div class="col-sm p-3 min-vh-100">
+	    <!-- content here -->
+	    <div class="text-center" style="font-size: 14px">
+	    </div>
+	    <div class='progress-wrapper' style="padding-top: 10px;">
+	      <div id='progress-bar' class='progress-bar progress-bar-striped' role='progressbar'
+		   style="height:30px; width: 0%; border-radius: 5px">&nbsp;</div>
+	    </div>
+	    <div id="celery-result">
+	    </div>
+
+	    <div class="row">
+	      <div class="col-md-12">
+		<div class="card card-profile">
+		  <div class="card-body">
+
+		    {% block photos_content %}
+		    <div style="margin-bottom: 20px;">
+		      <button type="button" class="btn btn-primary mb-2 js-upload-photos">
+			<span class="glyphicon glyphicon-upload"></span> Upload File
+			<span class="icon-bar"></span>
+			<i class="fa fa-upload"></i>
+		      </button>
+		      <!-- multiple webkitdirectory  -->
+		      <input id="fileupload" type="file" method="post" name="file" multiple
+			     directory draggable="true" enctype="multipart/form-data" style="display: none;"
+			     data-url="{% url 'progress_bar_upload' %}"
+			     data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+
+		      <form method="post" action="{% url 'reindex' %}">
+			{% csrf_token %}
+			<input type="hidden" name="next" value="{{ request.path }}">
+			<button type="submit" class="btn btn-primary mb-2 pull-right">
+			</span> Store Content
+			<span class="icon-bar"></span>
+			<i class="fas fa-cogs"></i>
+
+			</button>
+		      </form>
+
+		      <form method="post" action="{% url 'analyze' %}">
+			{% csrf_token %}
+			<input type="hidden" name="next" value="{{ request.path }}">
+			<button type="submit" class="btn btn-primary pull-right">
+			  Create Graph
+			  <span class="icon-bar"></span>
+			  <i class="fas fa-cogs"></i>
+			</button>
+		      </form>
+
+		    </div>
+		    <table id="gallery" class="table table-bordered">
+		      <thead>
+			<tr>
+			  <th>File</th>
+			</tr>
+		      </thead>
+		      <tbody>
+			{% for photo in photos %}
+			<tr>
+			  <td><a href="{{ photo.file.url }}">{{ photo.file.name }}</a></td>
+			</tr>
+			{% endfor %}
+		      </tbody>
+		    </table>
+		    <form method="post" action="{% url 'clear_database' %}">
+		      {% csrf_token %}
+		      <input type="hidden" name="next" value="{{ request.path }}">
+		      <button type="submit" class="btn btn-danger mb-2 pull-right">
+			<span class="glyphicon glyphicon-trash">
+			</span> Clear Database
+
+			<span class="icon-bar"></span>
+			<i class="fas fa-trash"></i>
+		      </button>
+		    </form>
+
+		  </div>
+		</div>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+</div>
+{% endblock %}
+{% endblock content %}
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script src="{% static 'assets/js/jquery-file-upload/progress-bar-upload.js' %}"></script>
+{% endblock javascripts %}

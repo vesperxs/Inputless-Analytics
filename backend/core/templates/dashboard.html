@@ -1,0 +1,229 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Dashboard {% endblock %}
+{% load static %}
+
+
+<!-- specific page css goes here  -->
+{% block stylesheets %}
+<link href="{% static 'assets/css/navbar.css' %}" rel="stylesheet" />
+<link href="{% static 'assets/css/ellie.css' %}" rel="stylesheet" />
+<link href="{% static 'assets/css/scrollbar.css' %}" rel="stylesheet" />
+<style>
+ .site-footer {
+   position: inherit;
+   font-size: 14px;
+   line-height: 20px;
+   letter-spacing: 0px;
+ }
+</style>
+
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-auto bg-dark sticky-top">
+      <div class="d-flex flex-sm-column flex-row flex-nowrap bg-dark align-items-center sticky-top">
+	<ul
+	  class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center justify-content-between w-100 px-2 align-items-center">
+	  <li class="nav-item">
+	    <a href="{% url 'home' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+	       data-bs-placement="right" data-bs-original-title="Home">      
+	      <i class="bi bi-back fs-1"></i>
+	    </a>
+	  </li>
+	</ul>
+      </div>
+    </div>
+    <div class="col-sm p-3 min-vh-100">
+ 
+      <!-- content -->
+      <div class="row">
+	<div class="col-12">
+	  <div class="card card-chart">
+	    <div class="card-header ">
+	      <div class="row">
+		<div class="col-sm-6 text-left">
+		  <h5 class="card-title">Month Upload</h5>
+		</div>
+
+	      </div>
+	    </div>
+	    <div class="card-body">
+	      <div class="chart-area">
+		<canvas id="chartBig1"></canvas>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+      </div>
+      <div class="row">
+	<div class="col-lg-3 col-md-6">
+	  <div class="card card-stats">
+	    <div class="card-body">
+	      <div class="row">
+		<div class="col-5">
+		  <div class="info-icon text-center icon-warning">
+		    <i class="tim-icons icon-chat-33"></i>
+		  </div>
+		</div>
+		<div class="col-7">
+		  <div class="numbers">
+		    <p class="card-category">Total Document Uploaded</p>
+		    <h3 class="card-title">
+		      {{chart_data.tot_doc}}
+		    </h3>
+		  </div>
+		</div>
+	      </div>
+	    </div>
+	    <div class="card-footer">
+	      <hr>
+	      <div class="stats">
+		<i class="tim-icons icon-refresh-01"></i>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	<div class="col-lg-3 col-md-6">
+	  <div class="card card-stats">
+	    <div class="card-body">
+	      <div class="row">
+		<div class="col-5">
+		  <div class="info-icon text-center icon-success">
+		    <i class="tim-icons icon-single-02"></i>
+		  </div>
+		</div>
+		<div class="col-7">
+		  <div class="numbers">
+		    <p class="card-category">Total Users</p>
+		    <h3 class="card-title">
+		      {{chart_data.tot_user}}
+		    </h3>
+		  </div>
+		</div>
+	      </div>
+	    </div>
+	    <div class="card-footer">
+	      <hr>
+	      <div class="stats">
+		<i class="tim-icons icon-trophy"></i>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+	<div class="col-lg-3 col-md-6">
+	  <div class="card card-stats">
+	    <div class="card-body">
+	      <div class="row">
+		<div class="col-5">
+		  <div class="info-icon text-center icon-success">
+		    <i class="tim-icons icon-single-02"></i>
+		  </div>
+		</div>
+		<div class="col-7">
+		  <div class="numbers">
+		    <p class="card-category">Total Space in Bytes</p>
+		    <h3 class="card-title">
+		      {{chart_data.space_limit}} 
+		    </h3>
+		  </div>
+		</div>
+	      </div>
+	    </div>
+	    <div class="card-footer">
+	      <hr>
+	      <div class="stats">
+		<i class="tim-icons icon-trophy"></i> 
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	
+
+	<div class="col-lg-3 col-md-6">
+	  <div class="card card-stats">
+	    <div class="card-body">
+	      <div class="row">
+		<div class="col-5">
+		  <div class="info-icon text-center icon-danger">
+		    <i class="tim-icons icon-molecule-40"></i>
+		  </div>
+		</div>
+		<div class="col-7">
+		  <div class="numbers">
+		    <p class="card-category">Space Left in Bytes</p>
+		    <h3 class="card-title">
+		      {{chart_data.folder_quotas}}
+		    </h3>
+		  </div>
+		</div>
+	      </div>
+	    </div>
+	    <div class="card-footer">
+	      <hr>
+	      <div class="stats">
+		<i class="tim-icons icon-watch-time"></i>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+      </div>
+			  
+      <div class="col-12">
+        <div class="card card-chart">
+          <div class="card-header">
+            <h5 class="card-category">NLP Metrics</h5>
+          </div>
+          <div class="card-body">
+            <div class="chart-area">
+              <canvas id="CountryChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="card card-chart">
+          <div class="card-header">
+            <h5 class="card-category">Miscellaneous </h5>
+          </div>
+          <div class="card-body">
+            <div class="chart-area">
+              <canvas id="CountryChart2"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+			
+
+      <div class="chart-area">
+	<canvas id="chartLinePurple"></canvas>
+      </div>
+    </div>
+  </div>
+  
+
+</div>
+
+</div>
+</div>
+</div>
+
+
+</div>
+
+<div id="div"></div>
+<div style="display:none">{{ chart_data|json_script:"data" }}</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script src="{% static 'assets/js/black-dashboard-script.js' %}"></script>
+
+{% endblock javascripts %}

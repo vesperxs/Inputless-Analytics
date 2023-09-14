@@ -1,0 +1,42 @@
+{% extends "two_factor/_base_focus.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-sm-auto bg-dark sticky-top">
+			<div class="d-flex flex-sm-column flex-row flex-nowrap bg-dark align-items-center sticky-top">
+				<ul
+					class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center justify-content-between w-100 px-3 align-items-center">
+					<li class="nav-item">
+						<a href="{% url 'home' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+							data-bs-placement="right" data-bs-original-title="Home">
+							<i class="bi-house fs-1"></i>
+						</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<div class="col-sm p-3 min-vh-100">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="card card-profile">
+						<div class="card-body">
+
+							<h1>{% block title %}{% trans "Disable Two-factor Authentication" %}{% endblock %}</h1>
+							<p>{% blocktrans trimmed %}You are about to disable two-factor authentication. This
+								weakens your account security, are you sure?{% endblocktrans %}</p>
+							<form method="post">
+								{% csrf_token %}
+								<table>{{ form }}</table>
+								<button class="btn btn-danger" type="submit">{% trans "Disable" %}</button>
+							</form>
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

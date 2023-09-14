@@ -1,0 +1,37 @@
+{% extends "two_factor/_base.html" %}
+{% load static %}
+
+{% block stylesheets %}
+<link href="{% static 'assets/css/ellie.css' %}" rel="stylesheet" />
+<link href="{% static 'assets/css/navbar.css' %}" rel="stylesheet" />
+{% endblock stylesheets %}
+
+{% block content_wrapper %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-auto bg-dark sticky-top">
+      <div class="d-flex flex-sm-column flex-row flex-nowrap bg-dark align-items-center sticky-top">
+        <ul
+          class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center justify-content-between w-100 px-3 align-items-center">
+          <li class="nav-item">
+            <a href="{% url 'home' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+              data-bs-placement="right" data-bs-original-title="Home">
+              <i class="bi-house fs-1"></i>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-sm p-3 min-vh-100">
+      <!-- content -->
+      <div class="container">
+        <div class="row">
+          <div class="col-md-5 offset-md-3">
+            {% block content %}{% endblock %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

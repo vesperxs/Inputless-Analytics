@@ -1,0 +1,74 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %} Display Progress {% endblock %}
+
+<!-- specific page css goes here  -->
+{% block stylesheets %}
+<link href="{% static 'assets/css/ellie.css' %}" rel="stylesheet" />
+
+<link href="{% static 'assets/css/navbar.css' %}" rel="stylesheet" />
+{% endblock stylesheets %}
+
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-auto bg-dark sticky-top">
+      <div class="d-flex flex-sm-column flex-row flex-nowrap bg-dark align-items-center sticky-top">
+	<ul
+	  class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center justify-content-between w-100 px-2 align-items-center">
+	  <li class="nav-item">
+	    <a href="{% url 'home' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+	       data-bs-placement="right" data-bs-original-title="Home">
+	      <i class="bi bi-back fs-1"></i>
+	    </a>
+	  </li>
+	</ul>
+      </div>
+    </div>
+    <div class="col-sm p-3 min-vh-100">
+      <!-- content -->
+
+      <div class="row">
+	<div class="col-md-12">
+          <div class="card card-profile">
+	    <div class="card-body">
+	      <h6 class="card-category text-gray">Analyzer</h6>
+	      <div class='progress-wrapper'>
+		<div id='progress-bar' class='progress-bar' style="background-color: #68a9ef; width: 0%;">&nbsp;</div>
+	      </div>
+	      <div id="progress-bar-message">Waiting for progress to complete...</div>
+	      <div id="celery-result"></div>
+
+	    </div>
+	    <a href="{% url 'progress_bar_upload' %}" class="btn btn-primary">Back</a>
+
+          </div>
+	</div>
+      </div>
+
+
+    </div>
+  </div>
+</div>
+
+</body>
+
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script src="{% static 'celery_progress/celery_progress.js' %}"></script>
+<script>
+
+  // vanilla JS version
+  document.addEventListener("DOMContentLoaded", function () {
+    var progressUrl = "{% url 'celery_progress:task_status' task_id %}";
+    CeleryProgressBar.initProgressBar(progressUrl);
+  });
+</script>
+
+
+{% endblock javascripts %}

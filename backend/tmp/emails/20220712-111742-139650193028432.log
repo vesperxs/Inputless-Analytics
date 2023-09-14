@@ -1,0 +1,53 @@
+Content-Type: multipart/alternative;
+ boundary="===============7859601422250399087=="
+MIME-Version: 1.0
+Subject: Profile activation
+From: webmaster@localhost
+To: gio@pnet.net
+Date: Tue, 12 Jul 2022 09:17:42 -0000
+Message-ID: <165761746227.19.2980099381285396148@f9d55bf0235a>
+
+--===============7859601422250399087==
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+
+
+
+To activate your profile, please follow this link:
+
+http://studiogalli.localhost:3000/activate/s5KClUCdyL0hiKFSIAHP/
+
+--===============7859601422250399087==
+Content-Type: text/html; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Profile activation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+
+<body>
+
+<p>
+    To activate your profile, please follow this link:
+</p>
+
+<p>
+    <a href="http://studiogalli.localhost:3000/activate/s5KClUCdyL0hiKFSIAHP/">http://studiogalli.localhost:3000/activate/s5KClUCdyL0hiKFSIAHP/</a>
+</p>
+
+</body>
+
+</html>
+
+--===============7859601422250399087==--
+
+-------------------------------------------------------------------------------

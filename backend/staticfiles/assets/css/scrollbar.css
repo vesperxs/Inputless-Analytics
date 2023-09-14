@@ -1,0 +1,8 @@
+/* Scroll Bar */
+::-webkit-scrollbar { width: 20px; height: 5px;}
+::-webkit-scrollbar-button {  background-color: rgb(20, 20, 20); }
+::-webkit-scrollbar-track {  background-color: #131212;}
+::-webkit-scrollbar-track-piece { background-color: #646464;}
+::-webkit-scrollbar-thumb { height: 50px; background-color: rgb(0, 0, 0); border-radius: 3px;}
+::-webkit-scrollbar-corner { background-color: #646464;}
+::-webkit-resizer { background-color: #666;}

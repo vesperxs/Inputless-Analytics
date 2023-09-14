@@ -1,0 +1,40 @@
+
+FROM phusion/baseimage:focal-1.0.0-amd64
+
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ARG user=gio
+RUN groupadd --gid 1000 -r ${user} && useradd --uid 1000 -r -g ${user} ${user}
+
+#change permission to appdata for persistent permissions on the host
+#sudo chown -R gio:gio appdata/ 
+
+WORKDIR /app
+#copy app with the right user permissions
+
+COPY --chown=${user}:${user} . /app/
+RUN chown -R ${user}:${user} /app/media/ /app/core/whoosh_index \
+ && chmod -R g+w /app/media/
+
+
+RUN apt-get update \
+	&& apt-get install --no-install-recommends --no-install-suggests -y \
+	python3-pip python3-dev netcat\
+	libxml2-dev libxslt1-dev antiword unrtf poppler-utils pstotext tesseract-ocr \ 
+    flac ffmpeg lame libmad0 libsox-fmt-mp3 sox libjpeg-dev swig \
+	&& apt-get clean \
+	&& apt-get autoremove \
+	&& cd /usr/local/bin \
+	&& ln -s /usr/bin/python3 python \
+	&& pip3 install --upgrade pip \
+	&& pip3 install --upgrade setuptools
+
+
+RUN pip3 install -r requirements.txt
+
+
+#USER ${user}
+
+
+EXPOSE 3000

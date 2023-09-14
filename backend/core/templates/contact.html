@@ -1,0 +1,127 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Contact {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<link href="{% static 'assets/css/ellie.css' %}" rel="stylesheet" />
+<link href="{% static 'assets/css/navbar.css' %}" rel="stylesheet" />
+<link href="{% static 'assets/css/scrollbar.css' %}" rel="stylesheet" />
+<style>
+ .site-footer {
+   position: inherit;
+   font-size: 14px;
+   line-height: 20px;
+   letter-spacing: 0px;
+ }
+ 
+  .rating__star {
+    cursor: pointer;
+    color: #dabd18b2;
+  }
+
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+{% load honeypot %}
+
+<div class="container-fluid">
+	<div class="row">
+	  <div class="col-sm-auto bg-dark sticky-top">
+	    <div class="d-flex flex-sm-column flex-row flex-nowrap bg-dark align-items-center sticky-top">
+	      <ul
+		class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center justify-content-between w-100 px-2 align-items-center">
+		<li class="nav-item">
+		  <a href="{% url 'home' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+		     data-bs-placement="right" data-bs-original-title="Home">
+		    <i class="bi bi-back fs-1"></i>
+		  </a>
+		</li>
+	      </ul>
+	    </div>
+	  </div>
+	  <div class="col-sm p-3 min-vh-100">
+	    <body class="d-flex flex-column h-100">
+	      <main class="flex-shrink-0">
+		<section class="vh-100 gradient-custom">
+		  <div class="container py-5 h-100">
+		    <div class="row d-flex justify-content-center align-items-center h-100">
+		      <div class="col-12 col-md-8 col-lg-6 col-xl-9">
+			<div class="card text-white" style="border-radius: 1rem;">
+			  <div class="card-body p-5 text-center">
+			    <div class="mb-md-5 mt-md-4 pb-5">
+			      <h2 class="fw-bold mb-2 text-uppercase"> Give us a feedback! </h2>
+			      <br>
+			      <label for="email">Email address</label>
+			      <form action="{% url 'contact_us' %}" method="post">
+                                {% csrf_token %}
+                                <div class="form-outline form-white mb-4">
+				  {% render_honeypot_field "email" %}
+				  <input class="form-control" id="email" name="email" type="email"  placeholder="name@example.com" data-sb-validations=" required,email" />
+
+				  <div class="invalid-feedback" data-sb-feedback="email:required">An email is required.</div>
+				  <div class="invalid-feedback" data-sb-feedback="email:email">Email is not valid.</div>
+                                </div>
+				<br>
+
+                                <!-- Subject input-->
+                                <label for="subject">Subject</label>
+                                <div class="form-outline form-white mb-4">
+				  {% render_honeypot_field "subject" %}
+
+				  <input class="form-control" id="subject" name="subject" type="subject" placeholder="subject" data-sb-validations="required" />
+				  <div class="invalid-feedback" data-sb-feedback="subject:required">A subject is required.</div>
+                                </div>
+
+				<br>
+				
+
+				<div class="rating">
+				  <i class="rating__star far fa-star"></i>
+				  <i class="rating__star far fa-star"></i>
+				  <i class="rating__star far fa-star"></i>
+				  <i class="rating__star far fa-star"></i>
+				  <i class="rating__star far fa-star"></i>
+				</div>
+				<br>
+
+				<!-- Message input-->
+				<label for="message">Message</label>
+
+				<div class="form-outline form-white mb-4">
+				  {% render_honeypot_field "message" %}
+
+				  <textarea class="form-control" id="message" name="message" type="text" placeholder="Enter your message here..." style="height: 10rem" data-sb-validations="required"></textarea>
+				  <div class="invalid-feedback" data-sb-feedback="message:required">A message is required.</div>
+				</div>
+				<!-- Submit success message-->
+				<!---->
+				<!-- This is what your users will see when the form-->
+				<!-- has successfully submitted-->
+				<div class="d-flex justify-content-center">
+				  <button class="btn btn-outline-light btn-lg px-5" type="submit">Send</button>
+				</div>
+			      </form>
+			    </div>
+			  </div>
+			</div>
+		      </div>
+		    </div>
+		  </div>
+	  </div>
+		</section>
+	      </main>
+
+	    </body>
+ </html>
+	   
+
+ {% endblock content %}
+
+
+ <!-- Specific Page JS goes HERE  -->
+ {% block javascripts %}
+ <script src="{% static 'assets/js/rating.js' %}"></script>
+ {% endblock javascripts %}

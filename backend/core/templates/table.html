@@ -1,0 +1,101 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Table View {% endblock %}
+
+{% load static %}
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<link href="{% static 'assets/css/ellie.css' %}" rel="stylesheet" />
+<link href="{% static 'assets/css/navbar.css' %}" rel="stylesheet" />
+<link href="{% static 'assets/css/scrollbar.css' %}" rel="stylesheet" />
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-auto bg-dark sticky-top">
+      <div class="d-flex flex-sm-column flex-row flex-nowrap bg-dark align-items-center sticky-top">
+	<ul
+	  class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center justify-content-between w-100 px-2 align-items-center">
+	  <li class="nav-item">
+	    <a href="{% url 'home' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+	       data-bs-placement="right" data-bs-original-title="Home">
+	      <i class="bi bi-back fs-1"></i>
+	    </a>
+      </div>
+    </div>
+    <div class="col-sm p-3 min-vh-100">
+      <!-- content here -->
+      <div class="row">
+	<div class="col-md-12">
+	  <nav class="navbar navbar-dark bg-primary">
+
+	    <ul class="navbar-nav mr-auto">
+	      <a class="nav-link">table view
+	      </a>
+	  </li>
+	    </ul>
+
+	    <!-- Search field -->
+	    <form class="form-inline my-2 my-lg-0" action="{% url 'table_views' %}" method="post">
+	      {% csrf_token %}
+	      <input class="form-control mr-sm-2" name='q' type="search" placeholder="Search"
+		     aria-label="Search">
+	      <select class='form-control mr-sm-4 my-lg-1' name="selection_field"
+		      id="id_selection_field">
+		<option value="FILENAME">FILENAME</option>
+	      </select>
+
+	    </form>
+	    </form>
+
+	  </nav>
+
+	  <div class="card card-profile">
+	    <div class="card-body">
+	      <table id="table"
+		     data-locale="it-IT"
+		     data-show-export="true"
+  		     data-pagination="true"
+  		     data-click-to-select="true"
+  		     data-toolbar="#toolbar"
+  		     data-show-toggle="true"
+  		     data-show-columns="true"
+		     data-show-print="true">
+		<thead>
+		  <br>
+		  <tr>
+		    <th data-field="FILENAME">FILENAME</th>
+		    <th data-field="PERSON">PERSON</th>
+		    <th data-field="IDPROC">IDPROC</th>
+		    <th data-field="ARTICOLI">ARTICLES</th>
+		    <th data-field="LOCATION">LOCATION</th>
+		  </tr>
+		</thead>
+	      </table>
+
+	      <div style="display:none">{{ data_table|json_script:"data" }}</div>
+
+	    </div>
+	  </div>
+	</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script src="{% static 'assets/js/bootstrap-table/tableExport.min.js' %}"></script>
+<script src="{% static 'assets/js/bootstrap-table/bootstrap-table.min.js' %}"></script>
+<script src="{% static 'assets/js/bootstrap-table/bootstrap-table-locale-all.min.js' %}"></script>
+<script src="{% static 'assets/js/bootstrap-table/bootstrap-table-export.min.js' %}"></script>
+
+<script src="{% static 'assets/js/table.js' %}"></script>
+
+<script src="{% static 'assets/js/bootstrap-table/bootstrap-table-print.js' %}"></script>
+<script src="{% static 'assets/js/bootstrap-table/bootstrap-table-print.min.js' %}"></script>
+
+{% endblock javascripts %}
