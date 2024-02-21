@@ -114,7 +114,7 @@ At the end you have something to enjoy as i already did !
 
 # The Pipeline includes:
 
--  Grafana (analytics web application)
+- Grafana (analytics web application)
 - Nginx ( reverse proxy )
 - Celery ( task worker )
 - Redis ( in-memory database )
@@ -255,30 +255,6 @@ At the end you have something to enjoy as i already did !
   #     - main
 
 ```
-
-
-
-
-
-
-
-# TODO:
-
-- [ ] Unit Test
-
-- [ ] Integration Test
-
-- [ ] Smoke Test
-
-- [ ] Add Terraform script 
-
-- [ ] Add pipeline CI/CD ( JENKINS )
-
-
-
-
-
-# Known Errors:
 
 
 
