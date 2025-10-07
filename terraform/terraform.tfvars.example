@@ -1,0 +1,101 @@
+# Inputless Analytics - Terraform Variables Example
+# Copy this file to terraform.tfvars and customize the values
+
+# General Configuration
+aws_region   = "us-east-1"
+project_name = "inputless-analytics"
+environment  = "prod"
+
+# Networking Configuration
+vpc_cidr        = "10.0.0.0/16"
+subnet_cidr     = "10.0.1.0/24"
+ssh_cidr_blocks = ["0.0.0.0/0"]  # Restrict this to your IP in production
+
+# EC2 Configuration
+instance_type     = "t3.large"
+root_volume_size  = 20
+ebs_volume_size   = 100
+ebs_volume_type   = "gp3"
+
+# SSH Configuration (REQUIRED)
+# Generate with: ssh-keygen -t rsa -b 4096 -C "your-email@example.com"
+# Then copy the public key content here
+ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC... your-email@example.com"
+
+# Domain Configuration (Optional)
+domain_name      = ""  # e.g., "analytics.yourcompany.com"
+route53_zone_id  = ""  # e.g., "Z1D633PJN98FT9"
+
+# Application Configuration
+admin_email = "admin@yourcompany.com"
+
+# Database Configuration
+postgres_db   = "inputless_analytics"
+postgres_user = "postgres"
+postgres_pass = "CHANGE_ME_SECURE_PASSWORD_123!"
+
+# Django Configuration
+secret_key    = "CHANGE_ME_DJANGO_SECRET_KEY_VERY_LONG_AND_SECURE"
+allowed_hosts = "localhost,127.0.0.1,your-domain.com"
+
+# Redis Configuration
+redis_url = "redis://localhost:6379/0"
+
+# ArangoDB Configuration
+arango_no_auth = "1"
+
+# Monitoring Configuration
+log_retention_days = 30
+enable_grafana     = true
+enable_prometheus  = true
+
+# Backup Configuration
+create_backup_bucket = true
+backup_retention_days = 7
+backup_schedule      = "0 2 * * *"  # Daily at 2 AM
+
+# SSL Configuration
+enable_ssl            = false
+ssl_certificate_arn   = ""  # ARN of your SSL certificate
+
+# Scaling Configuration
+min_size         = 1
+max_size         = 3
+desired_capacity = 1
+
+# Cost Optimization
+enable_spot_instances = false
+spot_price           = "0.05"
+
+# Security Configuration
+enable_cloudtrail = false
+enable_guardduty  = false
+
+# Performance Configuration
+enable_enhanced_monitoring = true
+enable_detailed_monitoring = false
+
+# Network Configuration
+enable_nat_gateway   = false
+enable_vpc_endpoints = false
+
+# Application Configuration
+docker_compose_version = "2.20.0"
+node_version          = "17.6.0"
+python_version        = "3.9"
+
+# Resource Limits
+memory_limit = 4096  # MB
+cpu_limit    = 2     # cores
+
+# Feature Flags
+enable_nginx           = true
+enable_ssl_termination = false
+
+# Additional Tags
+additional_tags = {
+  Owner       = "DevOps Team"
+  CostCenter  = "Engineering"
+  Project     = "Inputless Analytics"
+  Environment = "Production"
+}

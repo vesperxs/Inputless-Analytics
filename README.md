@@ -6,7 +6,40 @@ A comprehensive **Data Exploration Pipeline for Legal NLP** - an AI-powered SaaS
 
 ## 🚀 Overview
 
-Inputless Analytics (formerly Inputless Myotis) is a multi-tenant legal document processing platform that enables users to upload, analyze, and interact with legal documents through advanced NLP techniques and interactive visualizations. The platform provides document parsing, entity extraction, graph-based data visualization, and real-time chat communication.
+### The "Inputless" Concept
+
+**Inputless Analytics** represents a paradigm shift in legal document analysis - the concept of extracting maximum value from legal documents with minimal manual input. The name "Inputless" doesn't mean no input at all, but rather **intelligent, automated processing** that reduces the traditional manual effort required for legal document analysis.
+
+#### What Makes It "Inputless"?
+
+1. **Automated Document Processing**: Once uploaded, documents are automatically parsed, categorized, and analyzed without manual intervention
+2. **Intelligent Entity Extraction**: The system automatically identifies and extracts legal entities, relationships, and key information
+3. **Smart Categorization**: Documents are automatically classified by type (Sentenza, Appello, Memoria, etc.) based on content analysis
+4. **Dynamic Visualization**: Complex legal relationships are automatically visualized in interactive graphs
+5. **Contextual Search**: Advanced NLP enables finding relevant information without complex query construction
+6. **Multi-tenant Intelligence**: The system learns and adapts to different legal domains and organizational contexts
+
+#### The Analytics Advantage
+
+The platform transforms raw legal documents into **actionable insights** through:
+- **Pattern Recognition**: Identifying recurring legal patterns and precedents
+- **Relationship Mapping**: Visualizing connections between cases, parties, and legal concepts
+- **Trend Analysis**: Tracking legal developments and changes over time
+- **Predictive Insights**: Using historical data to inform future legal strategies
+
+### Platform Capabilities
+
+Inputless Analytics (formerly Inputless Myotis) is a comprehensive multi-tenant legal document processing platform that enables users to upload, analyze, and interact with legal documents through advanced NLP techniques and interactive visualizations. The platform provides document parsing, entity extraction, graph-based data visualization, and real-time chat communication.
+
+#### Core Philosophy
+
+The platform embodies the principle that **legal professionals should focus on strategy and interpretation, not data processing**. By automating the tedious aspects of document analysis, Inputless Analytics empowers legal teams to:
+
+- **Spend more time on legal reasoning** rather than data extraction
+- **Discover hidden patterns** in legal documents that might be missed manually
+- **Scale their analysis capabilities** across large document collections
+- **Collaborate more effectively** through shared visualizations and insights
+- **Make data-driven legal decisions** based on comprehensive document analysis
 
 ## ✨ Key Features
 
@@ -71,6 +104,7 @@ Inputless Analytics (formerly Inputless Myotis) is a multi-tenant legal document
 
 ### System Components
 
+#### Local Development Architecture
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Frontend      │    │   Django Web    │    │   PostgreSQL    │
@@ -88,6 +122,29 @@ Inputless Analytics (formerly Inputless Myotis) is a multi-tenant legal document
                        │   Redis         │    │   Prometheus    │
                        │   Cache/Queue   │    │   Monitoring    │
                        └─────────────────┘    └─────────────────┘
+```
+
+#### AWS Production Architecture (Terraform)
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        AWS VPC (10.0.0.0/16)                   │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
+│  │   Internet      │  │   EC2 Instance  │  │   EBS Volumes   │ │
+│  │   Gateway       │  │   (t3.large)    │  │   (Encrypted)   │ │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
+│           │                    │                    │          │
+│           ▼                    ▼                    ▼          │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
+│  │   Route53       │  │   Application   │  │   S3 Bucket     │ │
+│  │   (DNS)         │  │   Stack         │  │   (Backups)     │ │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
+│           │                    │                    │          │
+│           ▼                    ▼                    ▼          │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
+│  │   CloudWatch    │  │   Security      │  │   IAM Roles     │ │
+│  │   (Monitoring)  │  │   Groups        │  │   (Permissions) │ │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ## 📱 Screenshots
@@ -130,7 +187,13 @@ Inputless Analytics (formerly Inputless Myotis) is a multi-tenant legal document
 - Node.js v17.6.0 (for frontend development)
 - Git
 
-### Installation
+### Deployment Options
+
+- **🐳 Local Development**: Docker Compose for local testing
+- **☁️ AWS Cloud**: Terraform for production deployments
+- **🔧 Manual Setup**: Traditional server installation
+
+### Local Development
 
 1. **Clone the repository:**
    ```bash
@@ -168,6 +231,53 @@ Inputless Analytics (formerly Inputless Myotis) is a multi-tenant legal document
    - Web Application: http://localhost:3000
    - Grafana Dashboard: http://localhost:3060
    - Prometheus: http://localhost:9090
+
+### ☁️ AWS Cloud Deployment
+
+For production deployments, use our Terraform infrastructure-as-code setup:
+
+#### Prerequisites for AWS Deployment
+
+- **AWS CLI** configured with appropriate permissions
+- **Terraform** (version >= 1.0)
+- **SSH key pair** for EC2 access
+- **Domain name** (optional but recommended)
+
+#### Quick AWS Deployment
+
+1. **Configure Terraform variables:**
+   ```bash
+   cd terraform
+   cp terraform.tfvars.example terraform.tfvars
+   # Edit terraform.tfvars with your values
+   ```
+
+2. **Deploy to AWS:**
+   ```bash
+   terraform init
+   terraform plan
+   terraform apply
+   ```
+
+3. **Access your deployed application:**
+   - Application: `http://YOUR_IP:3000`
+   - Admin Panel: `http://YOUR_IP:3000/admin/`
+   - Grafana: `http://YOUR_IP:3060`
+   - Prometheus: `http://YOUR_IP:9090`
+
+#### AWS Infrastructure Features
+
+- **EC2 Instance** with configurable instance types
+- **VPC & Security Groups** with proper network isolation
+- **EBS Volumes** for persistent data storage
+- **Elastic IP** for static public IP
+- **Route53 Integration** for custom domains
+- **S3 Bucket** for automated backups
+- **CloudWatch** monitoring and logging
+- **SSL Certificate** support
+- **Auto-scaling** capabilities
+
+For detailed AWS deployment instructions, see the [Terraform Documentation](terraform/README.md).
 
 ## 🔧 Configuration
 
@@ -218,6 +328,111 @@ For production deployment with HTTPS:
    openssl req -new -nodes -newkey rsa:2048 -keyout localhost.key -out localhost.csr -subj "/C=US/ST=YourState/L=YourCity/O=Example-Certificates/CN=localhost.local"
    openssl x509 -req -sha256 -days 1024 -in localhost.csr -CA RootCA.pem -CAkey RootCA.key -CAcreateserial -extfile domains.ext -out localhost.crt
    ```
+
+## ☁️ Infrastructure as Code (Terraform)
+
+### AWS Deployment Options
+
+We provide comprehensive Terraform scripts for production-ready AWS deployments:
+
+#### 🏗️ Infrastructure Components
+
+| Component | Description | Port | Purpose |
+|-----------|-------------|------|---------|
+| **EC2 Instance** | Application server | 3000 | Main application |
+| **PostgreSQL** | Primary database | 5432 | Data storage |
+| **Redis** | Cache & message broker | 6379 | Session & task queue |
+| **ArangoDB** | Graph database | 8529 | Relationship data |
+| **Grafana** | Monitoring dashboard | 3060 | Metrics visualization |
+| **Prometheus** | Metrics collection | 9090 | System monitoring |
+| **Nginx** | Reverse proxy | 80/443 | Load balancing |
+
+#### 🚀 Quick Terraform Deployment
+
+```bash
+# 1. Configure your deployment
+cd terraform
+cp terraform.tfvars.example terraform.tfvars
+
+# 2. Edit configuration
+vim terraform.tfvars
+
+# 3. Deploy infrastructure
+terraform init
+terraform plan
+terraform apply
+```
+
+#### 📋 Required Configuration
+
+**Essential Variables:**
+```hcl
+# SSH Access
+ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC..."
+
+# Database Security
+postgres_pass = "YourSecurePassword123!"
+secret_key    = "YourDjangoSecretKey..."
+
+# Application
+admin_email   = "admin@yourcompany.com"
+domain_name   = "analytics.yourcompany.com"  # Optional
+```
+
+**Instance Types:**
+- **Development**: `t3.medium` (2 vCPU, 4GB RAM)
+- **Production**: `t3.large` (2 vCPU, 8GB RAM) or `t3.xlarge` (4 vCPU, 16GB RAM)
+- **High Performance**: `m5.xlarge` (4 vCPU, 16GB RAM)
+
+#### 🔒 Security Features
+
+- **VPC Isolation**: Private network with controlled access
+- **Security Groups**: Restrictive firewall rules
+- **IAM Roles**: Minimal required permissions
+- **Encrypted Storage**: EBS volumes with encryption
+- **SSL/TLS Support**: Automatic certificate management
+- **Backup Encryption**: S3 bucket with encryption
+
+#### 📊 Monitoring & Observability
+
+- **CloudWatch Integration**: System and application metrics
+- **Grafana Dashboards**: Pre-configured monitoring
+- **Prometheus Metrics**: Custom application metrics
+- **Health Checks**: Automated service monitoring
+- **Log Aggregation**: Centralized logging system
+
+#### 💰 Cost Optimization
+
+| Environment | Instance Type | Monthly Cost* | Use Case |
+|-------------|---------------|---------------|----------|
+| Development | t3.medium | ~$30 | Testing & development |
+| Staging | t3.large | ~$60 | Pre-production testing |
+| Production | t3.xlarge | ~$120 | Production workloads |
+| High Performance | m5.xlarge | ~$150 | High-traffic applications |
+
+*Costs are approximate and may vary by region and usage.
+
+#### 🔄 Backup & Recovery
+
+- **Automated Backups**: Daily S3 backups
+- **Point-in-time Recovery**: Database snapshots
+- **Disaster Recovery**: Multi-AZ deployment options
+- **Data Retention**: Configurable retention policies
+
+#### 🌐 Multi-Environment Support
+
+```bash
+# Development
+terraform apply -var-file="dev.tfvars"
+
+# Staging  
+terraform apply -var-file="staging.tfvars"
+
+# Production
+terraform apply -var-file="prod.tfvars"
+```
+
+For complete Terraform documentation, see [terraform/README.md](terraform/README.md).
 
 ## 📊 Monitoring & Analytics
 
@@ -270,6 +485,23 @@ pip install -r requirements.txt
 python manage.py runserver
 ```
 
+### Infrastructure Development
+
+```bash
+# Terraform development
+cd terraform
+terraform init
+terraform plan
+terraform apply
+
+# Validate Terraform configuration
+terraform validate
+terraform fmt
+
+# Destroy infrastructure (careful!)
+terraform destroy
+```
+
 ### Running Tests
 
 ```bash
@@ -280,6 +512,10 @@ python manage.py test
 # Frontend tests
 cd frontend
 npm test
+
+# Infrastructure tests (if using Terratest)
+cd terraform
+go test
 ```
 
 ## 📝 API Documentation
