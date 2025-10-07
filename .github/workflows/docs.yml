@@ -1,0 +1,216 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'README.md'
+      - 'docs/**'
+      - 'terraform/README.md'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'README.md'
+      - 'docs/**'
+      - 'terraform/README.md'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '17.6.0'
+
+jobs:
+  # Documentation Linting
+  docs-lint:
+    name: Documentation Linting
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install markdownlint
+      run: |
+        npm install -g markdownlint-cli
+
+    - name: Lint markdown files
+      run: |
+        markdownlint README.md terraform/README.md docs/*.md --fix
+
+    - name: Check for broken links
+      run: |
+        npm install -g markdown-link-check
+        markdown-link-check README.md
+        markdown-link-check terraform/README.md
+
+  # Generate API Documentation
+  api-docs:
+    name: Generate API Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        cd backend
+        pip install sphinx sphinx-rtd-theme sphinxcontrib-openapi
+
+    - name: Generate API documentation
+      run: |
+        cd backend
+        sphinx-apidoc -o docs/source backend/
+        sphinx-build -b html docs/source docs/build
+
+    - name: Upload API documentation
+      uses: actions/upload-artifact@v3
+      with:
+        name: api-documentation
+        path: backend/docs/build
+
+  # Generate Infrastructure Documentation
+  infra-docs:
+    name: Generate Infrastructure Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install terraform-docs
+      run: |
+        wget https://github.com/terraform-docs/terraform-docs/releases/latest/download/terraform-docs-linux-amd64.tar.gz
+        tar -xzf terraform-docs-linux-amd64.tar.gz
+        chmod +x terraform-docs
+        sudo mv terraform-docs /usr/local/bin/
+
+    - name: Generate Terraform documentation
+      run: |
+        cd terraform
+        terraform-docs markdown table --output-file README.md --output-mode inject .
+
+    - name: Commit documentation changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add terraform/README.md
+        git diff --staged --quiet || git commit -m "Update Terraform documentation"
+        git push
+
+  # Deploy Documentation
+  deploy-docs:
+    name: Deploy Documentation
+    runs-on: ubuntu-latest
+    needs: [docs-lint, api-docs, infra-docs]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        npm install -g gh-pages
+
+    - name: Download API documentation
+      uses: actions/download-artifact@v3
+      with:
+        name: api-documentation
+        path: docs/api
+
+    - name: Build documentation site
+      run: |
+        mkdir -p docs/site
+        cp README.md docs/site/index.md
+        cp terraform/README.md docs/site/terraform.md
+        cp -r docs/api docs/site/api
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: docs/site
+        cname: docs.inputless-analytics.com
+
+  # Documentation Quality Check
+  docs-quality:
+    name: Documentation Quality Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install documentation tools
+      run: |
+        pip install pydocstyle
+
+    - name: Check Python docstrings
+      run: |
+        cd backend
+        pydocstyle . --count || true
+
+    - name: Generate documentation coverage report
+      run: |
+        cd backend
+        pip install docstr-coverage
+        docstr-coverage . --fail-under=80 || echo "Documentation coverage below 80%"
+
+    - name: Check for TODO/FIXME comments
+      run: |
+        grep -r "TODO\|FIXME" backend/ || echo "No TODO/FIXME comments found"
+
+  # Update README badges
+  update-badges:
+    name: Update README Badges
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Update status badges
+      run: |
+        # Update CI status badge
+        sed -i 's|https://github.com/your-username/Inputless-Analytics/workflows/CI/badge.svg|https://github.com/${{ github.repository }}/workflows/Continuous%20Integration/badge.svg|g' README.md
+        
+        # Update security badge
+        sed -i 's|https://github.com/your-username/Inputless-Analytics/workflows/Security/badge.svg|https://github.com/${{ github.repository }}/workflows/Security%20Scanning/badge.svg|g' README.md
+
+    - name: Commit badge updates
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add README.md
+        git diff --staged --quiet || git commit -m "Update status badges"
+        git push

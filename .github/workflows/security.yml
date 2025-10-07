@@ -1,0 +1,332 @@
+name: Security Scanning
+
+on:
+  schedule:
+    - cron: '0 2 * * 1'  # Weekly on Monday at 2 AM
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.9'
+  NODE_VERSION: '17.6.0'
+
+jobs:
+  # Dependency Scanning
+  dependency-scan:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install Python dependencies
+      run: |
+        cd backend
+        pip install safety pip-audit
+
+    - name: Run Safety check
+      run: |
+        cd backend
+        safety check --json --output safety-report.json
+
+    - name: Run pip-audit
+      run: |
+        cd backend
+        pip-audit --format=json --output=pip-audit-report.json
+
+    - name: Upload Python security reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: python-security-reports
+        path: |
+          backend/safety-report.json
+          backend/pip-audit-report.json
+
+  # Node.js Security Scanning
+  node-security:
+    name: Node.js Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Run npm audit
+      run: |
+        cd frontend
+        npm audit --json > npm-audit-report.json || true
+
+    - name: Run Snyk security scan
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high --json-file-output=snyk-report.json
+
+    - name: Upload Node.js security reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: node-security-reports
+        path: |
+          frontend/npm-audit-report.json
+          frontend/snyk-report.json
+
+  # Code Security Analysis
+  code-security:
+    name: Code Security Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install security tools
+      run: |
+        pip install bandit semgrep
+
+    - name: Run Bandit security scan
+      run: |
+        cd backend
+        bandit -r . -f json -o bandit-report.json || true
+
+    - name: Run Semgrep
+      run: |
+        cd backend
+        semgrep --config=auto --json --output=semgrep-report.json . || true
+
+    - name: Upload code security reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: code-security-reports
+        path: |
+          backend/bandit-report.json
+          backend/semgrep-report.json
+
+  # Docker Security Scanning
+  docker-security:
+    name: Docker Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image
+      run: |
+        docker build -t inputless-analytics:security-test ./backend
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'inputless-analytics:security-test'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy results
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+    - name: Run Docker Scout
+      uses: docker/scout-action@v1
+      with:
+        command: cves
+        image: inputless-analytics:security-test
+        only-severities: critical,high
+        format: sarif
+        output: docker-scout-results.sarif
+
+    - name: Upload Docker Scout results
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'docker-scout-results.sarif'
+
+  # Infrastructure Security
+  infrastructure-security:
+    name: Infrastructure Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run Checkov
+      uses: bridgecrewio/checkov-action@master
+      with:
+        directory: terraform
+        framework: terraform
+        output_format: sarif
+        output_file_path: checkov-terraform.sarif
+
+    - name: Upload Checkov results
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: checkov-terraform.sarif
+
+    - name: Run TFSec
+      uses: aquasecurity/tfsec-action@v1.0.3
+      with:
+        working_directory: terraform
+        soft_fail: true
+
+    - name: Run KICS
+      uses: checkmarx/kics-action@v1.6.0
+      with:
+        path: terraform
+        output_path: kics-results.sarif
+
+    - name: Upload KICS results
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: kics-results.sarif
+
+  # SAST (Static Application Security Testing)
+  sast:
+    name: SAST Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: python, javascript
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+
+  # License Compliance
+  license-compliance:
+    name: License Compliance Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install license checking tools
+      run: |
+        pip install pip-licenses
+
+    - name: Check Python licenses
+      run: |
+        cd backend
+        pip-licenses --format=json --output-file=python-licenses.json
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Check Node.js licenses
+      run: |
+        cd frontend
+        npm install -g license-checker
+        license-checker --json > node-licenses.json
+
+    - name: Upload license reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: license-reports
+        path: |
+          backend/python-licenses.json
+          frontend/node-licenses.json
+
+  # Security Summary
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs: [dependency-scan, node-security, code-security, docker-security, infrastructure-security, sast, license-compliance]
+    if: always()
+
+    steps:
+    - name: Download all security reports
+      uses: actions/download-artifact@v3
+      with:
+        path: security-reports
+
+    - name: Generate security summary
+      run: |
+        echo "# Security Scan Summary" > security-summary.md
+        echo "## Scan Results" >> security-summary.md
+        echo "" >> security-summary.md
+        
+        # Count vulnerabilities by severity
+        echo "### Vulnerability Summary" >> security-summary.md
+        echo "- **Critical**: $(find security-reports -name "*.json" -exec jq -r '.[] | select(.severity == "critical") | .id' {} \; | wc -l)" >> security-summary.md
+        echo "- **High**: $(find security-reports -name "*.json" -exec jq -r '.[] | select(.severity == "high") | .id' {} \; | wc -l)" >> security-summary.md
+        echo "- **Medium**: $(find security-reports -name "*.json" -exec jq -r '.[] | select(.severity == "medium") | .id' {} \; | wc -l)" >> security-summary.md
+        echo "- **Low**: $(find security-reports -name "*.json" -exec jq -r '.[] | select(.severity == "low") | .id' {} \; | wc -l)" >> security-summary.md
+        
+        echo "" >> security-summary.md
+        echo "### Scan Status" >> security-summary.md
+        echo "- Dependency Scan: ${{ needs.dependency-scan.result }}" >> security-summary.md
+        echo "- Node.js Security: ${{ needs.node-security.result }}" >> security-summary.md
+        echo "- Code Security: ${{ needs.code-security.result }}" >> security-summary.md
+        echo "- Docker Security: ${{ needs.docker-security.result }}" >> security-summary.md
+        echo "- Infrastructure Security: ${{ needs.infrastructure-security.result }}" >> security-summary.md
+        echo "- SAST Analysis: ${{ needs.sast.result }}" >> security-summary.md
+        echo "- License Compliance: ${{ needs.license-compliance.result }}" >> security-summary.md
+
+    - name: Upload security summary
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-summary
+        path: security-summary.md
+
+    - name: Comment on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const summary = fs.readFileSync('security-summary.md', 'utf8');
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: summary
+          });
+
+    - name: Notify security team
+      if: failure()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+        channel: '#security'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow

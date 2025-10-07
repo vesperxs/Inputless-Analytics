@@ -1,0 +1,303 @@
+name: Continuous Deployment
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+  ECR_REPOSITORY: inputless-analytics
+
+jobs:
+  # Build and Push Docker Images
+  build-and-push:
+    name: Build and Push Images
+    runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,prefix={{branch}}-
+
+    - name: Build and push Docker image
+      id: build
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  # Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+
+    environment:
+      name: staging
+      url: ${{ steps.deploy.outputs.url }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.5.0
+
+    - name: Terraform Init
+      run: |
+        cd terraform
+        terraform init
+
+    - name: Terraform Plan
+      id: plan
+      run: |
+        cd terraform
+        terraform plan -var-file="staging.tfvars" -out=tfplan
+      continue-on-error: true
+
+    - name: Terraform Apply
+      if: github.event_name != 'pull_request'
+      run: |
+        cd terraform
+        terraform apply -auto-approve -var-file="staging.tfvars"
+
+    - name: Get deployment URL
+      id: deploy
+      run: |
+        cd terraform
+        echo "url=http://$(terraform output -raw instance_public_ip):3000" >> $GITHUB_OUTPUT
+
+    - name: Run smoke tests
+      run: |
+        sleep 120  # Wait for deployment
+        curl -f http://$(cd terraform && terraform output -raw instance_public_ip):3000/health || echo "Health check failed"
+
+  # Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.url }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.5.0
+
+    - name: Terraform Init
+      run: |
+        cd terraform
+        terraform init
+
+    - name: Terraform Plan
+      id: plan
+      run: |
+        cd terraform
+        terraform plan -var-file="production.tfvars" -out=tfplan
+
+    - name: Terraform Apply
+      run: |
+        cd terraform
+        terraform apply -auto-approve -var-file="production.tfvars"
+
+    - name: Get deployment URL
+      id: deploy
+      run: |
+        cd terraform
+        echo "url=https://$(terraform output -raw domain_name || terraform output -raw instance_public_ip)" >> $GITHUB_OUTPUT
+
+    - name: Run production smoke tests
+      run: |
+        sleep 180  # Wait for deployment
+        curl -f https://$(cd terraform && terraform output -raw domain_name || terraform output -raw instance_public_ip)/health || echo "Health check failed"
+
+    - name: Notify deployment
+      uses: 8398a7/action-slack@v3
+      if: always()
+      with:
+        status: ${{ job.status }}
+        channel: '#deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow
+
+  # Database Migration
+  database-migration:
+    name: Database Migration
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always() && (needs.deploy-staging.result == 'success' || needs.deploy-production.result == 'success')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Get instance IP
+      id: get-ip
+      run: |
+        cd terraform
+        echo "ip=$(terraform output -raw instance_public_ip)" >> $GITHUB_OUTPUT
+
+    - name: Run database migrations
+      run: |
+        ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} ubuntu@${{ steps.get-ip.outputs.ip }} \
+          "docker exec -it Web bash -c 'cd /app && python manage.py migrate'"
+
+    - name: Create superuser (if needed)
+      run: |
+        ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} ubuntu@${{ steps.get-ip.outputs.ip }} \
+          "docker exec -it Web bash -c 'cd /app && python manage.py createsuperuser --noinput --username admin --email admin@example.com' || echo 'Superuser already exists'"
+
+  # Health Check and Monitoring
+  health-check:
+    name: Health Check
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production, database-migration]
+    if: always() && (needs.deploy-staging.result == 'success' || needs.deploy-production.result == 'success')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Get deployment info
+      id: get-info
+      run: |
+        cd terraform
+        echo "ip=$(terraform output -raw instance_public_ip)" >> $GITHUB_OUTPUT
+        echo "domain=$(terraform output -raw domain_name || echo '')" >> $GITHUB_OUTPUT
+
+    - name: Run comprehensive health checks
+      run: |
+        # Application health
+        curl -f http://${{ steps.get-info.outputs.ip }}:3000/health || echo "Application health check failed"
+        
+        # Database connectivity
+        ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} ubuntu@${{ steps.get-info.outputs.ip }} \
+          "docker exec -it Web bash -c 'cd /app && python manage.py dbshell -c \"SELECT 1;\"'"
+        
+        # Redis connectivity
+        ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} ubuntu@${{ steps.get-info.outputs.ip }} \
+          "docker exec -it Redis redis-cli ping"
+        
+        # ArangoDB connectivity
+        curl -f http://${{ steps.get-info.outputs.ip }}:8529/_api/version || echo "ArangoDB health check failed"
+        
+        # Grafana health
+        curl -f http://${{ steps.get-info.outputs.ip }}:3060/api/health || echo "Grafana health check failed"
+        
+        # Prometheus health
+        curl -f http://${{ steps.get-info.outputs.ip }}:9090/-/healthy || echo "Prometheus health check failed"
+
+    - name: Performance check
+      run: |
+        # Check response times
+        time curl -f http://${{ steps.get-info.outputs.ip }}:3000/ || echo "Performance check failed"
+        
+        # Check resource usage
+        ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} ubuntu@${{ steps.get-info.outputs.ip }} \
+          "docker stats --no-stream"
+
+  # Rollback (if needed)
+  rollback:
+    name: Rollback
+    runs-on: ubuntu-latest
+    if: failure() && (needs.deploy-staging.result == 'failure' || needs.deploy-production.result == 'failure')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Rollback deployment
+      run: |
+        cd terraform
+        terraform apply -auto-approve -var-file="previous.tfvars" || echo "Rollback completed"
+
+    - name: Notify rollback
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+        channel: '#alerts'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow

@@ -309,26 +309,26 @@ For production deployment with HTTPS:
 
 1. **Generate Root CA:**
    ```bash
-   openssl req -x509 -nodes -new -sha256 -days 1024 -newkey rsa:2048 -keyout RootCA.key -out RootCA.pem -subj "/C=US/CN=Example-Root-CA"
-   openssl x509 -outform pem -in RootCA.pem -out RootCA.crt
-   ```
+  openssl req -x509 -nodes -new -sha256 -days 1024 -newkey rsa:2048 -keyout RootCA.key -out RootCA.pem -subj "/C=US/CN=Example-Root-CA"
+  openssl x509 -outform pem -in RootCA.pem -out RootCA.crt
+  ```
 
 2. **Generate Domain Certificate:**
    ```bash
    # Create domains.ext file
    echo "authorityKeyIdentifier=keyid,issuer
-   basicConstraints=CA:FALSE
-   keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
-   subjectAltName = @alt_names
-   [alt_names]
-   DNS.1 = localhost
+  basicConstraints=CA:FALSE
+  keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+  subjectAltName = @alt_names
+  [alt_names]
+  DNS.1 = localhost
    DNS.2 = your-domain.com" > domains.ext
    
    # Generate certificate
-   openssl req -new -nodes -newkey rsa:2048 -keyout localhost.key -out localhost.csr -subj "/C=US/ST=YourState/L=YourCity/O=Example-Certificates/CN=localhost.local"
-   openssl x509 -req -sha256 -days 1024 -in localhost.csr -CA RootCA.pem -CAkey RootCA.key -CAcreateserial -extfile domains.ext -out localhost.crt
-   ```
-
+  openssl req -new -nodes -newkey rsa:2048 -keyout localhost.key -out localhost.csr -subj "/C=US/ST=YourState/L=YourCity/O=Example-Certificates/CN=localhost.local"
+  openssl x509 -req -sha256 -days 1024 -in localhost.csr -CA RootCA.pem -CAkey RootCA.key -CAcreateserial -extfile domains.ext -out localhost.crt
+  ```
+  
 ## ☁️ Infrastructure as Code (Terraform)
 
 ### AWS Deployment Options
@@ -518,6 +518,98 @@ cd terraform
 go test
 ```
 
+## 🔄 CI/CD Pipeline
+
+### Automated Workflows
+
+Our project includes comprehensive CI/CD pipelines powered by GitHub Actions:
+
+#### 🧪 Continuous Integration (CI)
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| **CI** | Push/PR to main/develop | Full application testing |
+| **Security** | Weekly + Push/PR | Security vulnerability scanning |
+| **Terraform CI** | Push/PR to terraform/ | Infrastructure validation |
+| **Documentation** | Push/PR to docs/ | Documentation generation |
+
+#### 🚀 Continuous Deployment (CD)
+
+| Environment | Trigger | Deployment |
+|-------------|---------|------------|
+| **Staging** | Push to develop | Auto-deploy to staging AWS |
+| **Production** | Push to main | Auto-deploy to production AWS |
+| **Manual** | Workflow dispatch | On-demand deployment |
+
+#### 🔒 Security Pipeline
+
+- **Dependency Scanning**: Python (Safety, pip-audit) + Node.js (npm audit, Snyk)
+- **Code Security**: Bandit, Semgrep, SAST analysis
+- **Container Security**: Trivy, Docker Scout vulnerability scanning
+- **Infrastructure Security**: Checkov, TFSec, KICS
+- **License Compliance**: Automated license checking
+
+#### 📊 Quality Gates
+
+- **Code Quality**: Linting (flake8, ESLint), formatting (black, prettier)
+- **Test Coverage**: Backend (pytest) + Frontend (Jest) with coverage reports
+- **Security**: All security scans must pass
+- **Infrastructure**: Terraform validation and security checks
+- **Documentation**: Markdown linting and link checking
+
+#### 🏗️ Infrastructure as Code
+
+- **Terraform Validation**: Format, validate, plan, and apply
+- **Cost Estimation**: Infracost integration for cost analysis
+- **Security Scanning**: Infrastructure security best practices
+- **Multi-Environment**: Separate staging and production configurations
+
+### Pipeline Status
+
+[![CI](https://github.com/your-username/Inputless-Analytics/workflows/Continuous%20Integration/badge.svg)](https://github.com/your-username/Inputless-Analytics/actions)
+[![Security](https://github.com/your-username/Inputless-Analytics/workflows/Security%20Scanning/badge.svg)](https://github.com/your-username/Inputless-Analytics/actions)
+[![Terraform](https://github.com/your-username/Inputless-Analytics/workflows/Terraform%20CI/badge.svg)](https://github.com/your-username/Inputless-Analytics/actions)
+[![Documentation](https://github.com/your-username/Inputless-Analytics/workflows/Documentation/badge.svg)](https://github.com/your-username/Inputless-Analytics/actions)
+
+### Local Development Setup
+
+```bash
+# 1. Clone repository
+git clone https://github.com/your-username/Inputless-Analytics.git
+cd Inputless-Analytics
+
+# 2. Set up pre-commit hooks
+pip install pre-commit
+pre-commit install
+
+# 3. Run local tests
+make test
+
+# 4. Run security checks
+make security
+
+# 5. Format code
+make format
+```
+
+### Required Secrets
+
+For the CI/CD pipeline to work, configure these GitHub Secrets:
+
+```bash
+# AWS Deployment
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+SSH_PRIVATE_KEY=your_ssh_private_key
+
+# Security Scanning
+SNYK_TOKEN=your_snyk_token
+INFRACOST_API_KEY=your_infracost_api_key
+
+# Notifications
+SLACK_WEBHOOK=your_slack_webhook_url
+```
+
 ## 📝 API Documentation
 
 The platform provides RESTful APIs for:
@@ -549,7 +641,7 @@ We welcome contributions! Please follow these steps:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache License - see the [LICENSE](LICENSE) file for details.
 
 ## 👥 Authors
 

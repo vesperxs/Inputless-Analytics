@@ -1,0 +1,393 @@
+name: Terraform CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform-ci.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to validate'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+
+env:
+  TF_VERSION: '1.5.0'
+  AWS_REGION: 'us-east-1'
+
+jobs:
+  # Terraform Format Check
+  terraform-fmt:
+    name: Terraform Format Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+
+    - name: Terraform Format Check
+      run: |
+        cd terraform
+        terraform fmt -check -recursive
+
+    - name: Terraform Format (Auto-fix)
+      run: |
+        cd terraform
+        terraform fmt -recursive
+
+  # Terraform Validation
+  terraform-validate:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Terraform Init
+      run: |
+        cd terraform
+        terraform init
+
+    - name: Terraform Validate
+      run: |
+        cd terraform
+        terraform validate
+
+  # Terraform Plan (Staging)
+  terraform-plan-staging:
+    name: Terraform Plan - Staging
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/develop'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Terraform Init
+      run: |
+        cd terraform
+        terraform init
+
+    - name: Terraform Plan - Staging
+      run: |
+        cd terraform
+        terraform plan -var-file="staging.tfvars" -out=tfplan-staging
+
+    - name: Upload Terraform Plan
+      uses: actions/upload-artifact@v3
+      with:
+        name: terraform-plan-staging
+        path: terraform/tfplan-staging
+
+  # Terraform Plan (Production)
+  terraform-plan-production:
+    name: Terraform Plan - Production
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Terraform Init
+      run: |
+        cd terraform
+        terraform init
+
+    - name: Terraform Plan - Production
+      run: |
+        cd terraform
+        terraform plan -var-file="production.tfvars" -out=tfplan-production
+
+    - name: Upload Terraform Plan
+      uses: actions/upload-artifact@v3
+      with:
+        name: terraform-plan-production
+        path: terraform/tfplan-production
+
+  # Security Scanning
+  terraform-security:
+    name: Terraform Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run Checkov
+      uses: bridgecrewio/checkov-action@master
+      with:
+        directory: terraform
+        framework: terraform
+        output_format: sarif
+        output_file_path: checkov-results.sarif
+
+    - name: Upload Checkov results
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: checkov-results.sarif
+
+    - name: Run TFSec
+      uses: aquasecurity/tfsec-action@v1.0.3
+      with:
+        working_directory: terraform
+        soft_fail: true
+
+  # Cost Estimation
+  terraform-cost:
+    name: Terraform Cost Estimation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Terraform Init
+      run: |
+        cd terraform
+        terraform init
+
+    - name: Terraform Plan
+      run: |
+        cd terraform
+        terraform plan -var-file="staging.tfvars" -out=tfplan
+
+    - name: Run Infracost
+      uses: infracost/infracost-gh-action@v0.10
+      with:
+        api_key: ${{ secrets.INFRACOST_API_KEY }}
+        path: terraform
+        terraform_plan_flags: -var-file="staging.tfvars"
+        format: table
+        show_skipped: false
+
+  # Terraform Apply (Staging)
+  terraform-apply-staging:
+    name: Terraform Apply - Staging
+    runs-on: ubuntu-latest
+    needs: [terraform-fmt, terraform-validate, terraform-plan-staging, terraform-security]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+
+    environment:
+      name: staging
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Terraform Init
+      run: |
+        cd terraform
+        terraform init
+
+    - name: Terraform Apply - Staging
+      run: |
+        cd terraform
+        terraform apply -auto-approve -var-file="staging.tfvars"
+
+    - name: Get outputs
+      run: |
+        cd terraform
+        terraform output -json > outputs.json
+
+    - name: Upload outputs
+      uses: actions/upload-artifact@v3
+      with:
+        name: terraform-outputs-staging
+        path: terraform/outputs.json
+
+  # Terraform Apply (Production)
+  terraform-apply-production:
+    name: Terraform Apply - Production
+    runs-on: ubuntu-latest
+    needs: [terraform-fmt, terraform-validate, terraform-plan-production, terraform-security]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    environment:
+      name: production
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Terraform Init
+      run: |
+        cd terraform
+        terraform init
+
+    - name: Terraform Apply - Production
+      run: |
+        cd terraform
+        terraform apply -auto-approve -var-file="production.tfvars"
+
+    - name: Get outputs
+      run: |
+        cd terraform
+        terraform output -json > outputs.json
+
+    - name: Upload outputs
+      uses: actions/upload-artifact@v3
+      with:
+        name: terraform-outputs-production
+        path: terraform/outputs.json
+
+  # Infrastructure Testing
+  infrastructure-test:
+    name: Infrastructure Test
+    runs-on: ubuntu-latest
+    needs: [terraform-apply-staging, terraform-apply-production]
+    if: always() && (needs.terraform-apply-staging.result == 'success' || needs.terraform-apply-production.result == 'success')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download outputs
+      uses: actions/download-artifact@v3
+      with:
+        name: terraform-outputs-${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+
+    - name: Parse outputs
+      id: outputs
+      run: |
+        if [ -f outputs.json ]; then
+          echo "ip=$(jq -r '.instance_public_ip.value' outputs.json)" >> $GITHUB_OUTPUT
+          echo "domain=$(jq -r '.domain_name.value // empty' outputs.json)" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Test infrastructure connectivity
+      run: |
+        if [ -n "${{ steps.outputs.outputs.ip }}" ]; then
+          # Test SSH connectivity
+          ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} ubuntu@${{ steps.outputs.outputs.ip }} "echo 'SSH connection successful'"
+          
+          # Test application endpoints
+          curl -f http://${{ steps.outputs.outputs.ip }}:3000/health || echo "Application health check failed"
+          curl -f http://${{ steps.outputs.outputs.ip }}:3060 || echo "Grafana check failed"
+          curl -f http://${{ steps.outputs.outputs.ip }}:9090 || echo "Prometheus check failed"
+        fi
+
+  # Cleanup (on failure)
+  terraform-cleanup:
+    name: Terraform Cleanup
+    runs-on: ubuntu-latest
+    if: failure() && (needs.terraform-apply-staging.result == 'failure' || needs.terraform-apply-production.result == 'failure')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Terraform Destroy (if needed)
+      run: |
+        cd terraform
+        terraform destroy -auto-approve -var-file="${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}.tfvars" || echo "Cleanup completed"
+
+    - name: Notify cleanup
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+        channel: '#infrastructure'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow
