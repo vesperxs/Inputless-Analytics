@@ -648,6 +648,24 @@ This project is licensed under the Apache License - see the [LICENSE](LICENSE) f
 - **Giovanni Errico** - *Initial work* - [GitHub](https://github.com/giovanni-errico)
 - **Leonardo Trisolini** - *Initial work* - [GitHub](https://github.com/leonardo-trisolini)
 
+## 🏢 Sponsors
+
+We are grateful to our sponsors who support the development and maintenance of Inputless Analytics:
+
+### Studio Legale Errico
+
+<div align="center">
+  <img src="/images/logo_studio2.png" alt="Studio Legale Errico Logo" width="200" height="100">
+</div>
+
+**Studio Legale Errico** is a leading Italian law firm specializing in criminal law. Their expertise in criminal document analysis and their commitment to innovation has been instrumental in the development of Inputless Analytics.
+
+- **Website**: [Studio Legale Errico](https://www.studioerrico.legal)
+- **Specialization**: Criminal Law
+- **Contribution**: Criminal law expertise, legal domain knowledge, testing, and validation of the platform
+
+*Studio Legale Errico provides criminal law expertise and domain knowledge that ensures Inputless Analytics meets the real-world needs of criminal law professionals and legal practitioners.*
+
 ## 🌐 Website
 
 Visit our website: [https://inputless-analytics.com](https://inputless-analytics.com)
